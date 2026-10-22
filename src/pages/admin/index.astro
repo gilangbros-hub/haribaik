@@ -1,0 +1,21 @@
+---
+const user = Astro.locals.adminUser;
+if (!user) return Astro.redirect('/admin/login');
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Admin — HariBahagia</title>
+  </head>
+  <body>
+    <main>
+      <h1>Pengelolaan undangan</h1>
+      <p>Login sebagai {user.email}</p>
+      <form method="post" action="/api/admin/logout"><button type="submit">Keluar</button></form>
+    </main>
+  </body>
+</html>

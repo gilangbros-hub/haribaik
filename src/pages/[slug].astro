@@ -3,6 +3,7 @@ import InvitationPage from '../components/InvitationPage.astro';
 import { publicContentClient, readPublishedWedding } from '../lib/content/store';
 import { guestAdminDb } from '../lib/guests/server';
 import { readActiveGuest } from '../lib/guests/public';
+import { resolveWeddingMedia } from '../lib/content/media';
 import type { WeddingContent } from '../lib/content';
 
 export const prerender = false;
@@ -11,6 +12,7 @@ const slug = Astro.params.slug ?? '';
 const baseUrl = import.meta.env.PUBLIC_SITE_URL;
 let canonicalUrl: string | null = null;
 let invitation: WeddingContent | null = null;
+let media = null;
 let recipient: string | null = null;
 let rsvpStatus: 'attending' | 'declined' | null = null;
 let unavailable = false;
@@ -28,6 +30,7 @@ if (validSlug) {
       if (!client) throw new Error('Public content storage is unavailable.');
       invitation = await readPublishedWedding(client);
       if (invitation) {
+        media = await resolveWeddingMedia(client, invitation);
         const base = baseUrl ? new URL(baseUrl) : null;
         if (!base || base.protocol !== 'https:' || base.username || base.password || base.search || base.hash || base.pathname !== '/') {
           throw new Error('PUBLIC_SITE_URL must be a canonical HTTPS origin.');
@@ -59,7 +62,7 @@ const calendarUrl = canonicalUrl ? new URL('/calendar.ics', canonicalUrl).toStri
   </head>
   <body>
     {invitation && recipient
-      ? <InvitationPage invitation={invitation} recipient={recipient} calendarUrl={calendarUrl} guestSlug={slug} rsvpStatus={rsvpStatus} />
+      ? <InvitationPage invitation={invitation} recipient={recipient} calendarUrl={calendarUrl} guestSlug={slug} rsvpStatus={rsvpStatus} media={media ?? undefined} />
       : <main class="publication-state"><h1>{unavailable ? 'Undangan belum dapat dimuat' : 'Undangan tidak tersedia'}</h1><p>{unavailable ? 'Silakan coba kembali beberapa saat lagi.' : 'Tautan undangan tidak tersedia.'}</p></main>}
   </body>
 </html>

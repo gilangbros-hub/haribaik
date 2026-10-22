@@ -1,6 +1,7 @@
 ---
 import type { WeddingContent } from '../lib/content';
 import { formatWeddingDate } from '../lib/content';
+import type { WeddingMediaUrls } from '../lib/content/media';
 import '../styles/invitation.css';
 
 interface Props {
@@ -8,11 +9,12 @@ interface Props {
   recipient?: string;
   preview?: boolean;
   calendarUrl?: string;
+  media?: WeddingMediaUrls;
   guestSlug?: string;
   rsvpStatus?: 'attending' | 'declined' | null;
 }
 
-const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics', guestSlug, rsvpStatus = null } = Astro.props;
+const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics', media, guestSlug, rsvpStatus = null } = Astro.props;
 const coupleName = `${invitation.brideName} & ${invitation.groomName}`;
 const firstDate = invitation.events[0] ? formatWeddingDate(invitation.events[0].startsAt, invitation.timeZone) : '';
 const profiles = [
@@ -27,6 +29,7 @@ const profiles = [
       <span class="sun"></span><span class="figure figure-one"></span><span class="figure figure-two"></span>
       <span class="cover-caption">A day to remember</span>
     </div>
+    {media?.coverImage && <img class="cover-photo" src={media.coverImage} alt={invitation.coverImage?.alt ?? ''} fetchpriority="high" />}
     <p class="eyebrow">{invitation.title}</p>
     <h1 id="cover-title">{coupleName}</h1>
     {firstDate && <p class="cover-date">{firstDate}</p>}
@@ -37,6 +40,7 @@ const profiles = [
     <button class="open-button" type="button" data-open-invitation aria-controls="invitation-body">
       Buka Undangan <span aria-hidden="true">↓</span>
     </button>
+    {media?.music && <><button class="music-button" type="button" data-music-toggle aria-pressed="false">Putar musik</button><audio data-invitation-audio src={media.music} preload="none" aria-label="Musik undangan"></audio><p data-audio-status role="status" aria-live="polite"></p></>}
     {preview && <p class="sample-note">Preview draf — hanya terlihat oleh admin</p>}
   </section>
 
@@ -52,15 +56,18 @@ const profiles = [
       <p class="eyebrow">Two hearts, one promise</p>
       <h2 id="profiles-title">Mempelai</h2>
       <div class="profile-grid">
-        {profiles.map((profile, index) => (
+          {profiles.map((profile, index) => {
+            const image = index === 0 ? media?.brideImage : media?.groomImage;
+            const imageData = index === 0 ? invitation.brideImage : invitation.groomImage;
+            return (
           <article class="profile-card">
-            <div class:list={['portrait', index === 0 ? 'portrait-one' : 'portrait-two']} role="img" aria-label={`Area foto ${profile.role}`}>
-              <span aria-hidden="true">{profile.name.charAt(0)}</span>
+            <div class:list={['portrait', index === 0 ? 'portrait-one' : 'portrait-two']}>
+              {image ? <img src={image} alt={imageData?.alt ?? ''} loading="lazy" /> : <span role="img" aria-label={`Foto ${profile.role} belum tersedia`}>{profile.name.charAt(0)}</span>}
             </div>
             <p class="eyebrow">{profile.role}</p>
             <h3>{profile.name}</h3>
           </article>
-        ))}
+          );})}
       </div>
     </section>
 
@@ -87,6 +94,16 @@ const profiles = [
         </article>
       </section>
     ))}
+
+    {media?.gallery.some(Boolean) && (
+      <section class="gallery section" aria-labelledby="gallery-title">
+        <p class="eyebrow">A few favorite moments</p>
+        <h2 id="gallery-title">Galeri</h2>
+        <div class="gallery-grid">
+          {media.gallery.map((url, index) => url && invitation.gallery[index] && <img src={url} alt={invitation.gallery[index].alt} loading="lazy" decoding="async" />)}
+        </div>
+      </section>
+    )}
 
     <section class="rsvp section" aria-labelledby="rsvp-title">
       <p class="eyebrow">With joy</p>
@@ -116,9 +133,33 @@ const profiles = [
 </main>
 
 <script>
+  const audio = document.querySelector<HTMLAudioElement>('[data-invitation-audio]');
+  const musicButton = document.querySelector<HTMLButtonElement>('[data-music-toggle]');
+  const audioStatus = document.querySelector<HTMLElement>('[data-audio-status]');
+  const updateMusic = () => {
+    if (!audio || !musicButton) return;
+    const playing = !audio.paused;
+    musicButton.textContent = playing ? 'Jeda musik' : 'Putar musik';
+    musicButton.setAttribute('aria-pressed', String(playing));
+  };
+  audio?.addEventListener('play', updateMusic);
+  audio?.addEventListener('pause', updateMusic);
+  audio?.addEventListener('error', () => { if (audioStatus) audioStatus.textContent = 'Musik tidak dapat diputar. Anda tetap dapat membaca undangan.'; });
+  const startMusic = () => {
+    if (!audio) return;
+    audio.play().then(() => { if (audioStatus) audioStatus.textContent = ''; }).catch(() => {
+      if (audioStatus) audioStatus.textContent = 'Musik tidak dapat diputar. Anda tetap dapat membaca undangan.';
+    });
+  };
+  musicButton?.addEventListener('click', () => {
+    if (!audio) return;
+    if (audio.paused) startMusic();
+    else audio.pause();
+  });
   document.querySelector('[data-open-invitation]')?.addEventListener('click', () => {
     const body = document.querySelector<HTMLElement>('#invitation-body');
     if (!body) return;
+    startMusic();
     body.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
     document.querySelector<HTMLElement>('#invitation')?.focus({ preventScroll: true });
   });

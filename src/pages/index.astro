@@ -1,13 +1,16 @@
 ---
 import InvitationPage from '../components/InvitationPage.astro';
 import { publicContentClient, readPublishedWedding } from '../lib/content/store';
+import { resolveWeddingMedia } from '../lib/content/media';
 
 const client = publicContentClient();
 let invitation = null;
+let media = null;
 let unavailable = !client;
 if (client) {
   try {
     invitation = await readPublishedWedding(client);
+    if (invitation) media = await resolveWeddingMedia(client, invitation);
   } catch {
     unavailable = true;
   }
@@ -29,7 +32,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate'
   </head>
   <body>
     {invitation
-      ? <InvitationPage invitation={invitation} />
+      ? <InvitationPage invitation={invitation} media={media ?? undefined} />
       : <main class="publication-state"><h1>{unavailable ? 'Undangan belum dapat dimuat' : 'Undangan belum tersedia'}</h1><p>{unavailable ? 'Silakan coba kembali beberapa saat lagi.' : 'Undangan akan tersedia setelah dipublikasikan.'}</p></main>}
   </body>
 </html>

@@ -1,0 +1,98 @@
+---
+import type { Invitation } from '../data/invitation';
+import '../styles/invitation.css';
+
+interface Props {
+  invitation: Invitation;
+}
+
+const { invitation } = Astro.props;
+const calendar = '/calendar.ics';
+---
+
+<main id="invitation" tabindex="-1">
+  <section class="cover" aria-labelledby="cover-title">
+    <div class="cover-art" aria-hidden="true">
+      <span class="sun"></span><span class="figure figure-one"></span><span class="figure figure-two"></span>
+      <span class="cover-caption">A day to remember</span>
+    </div>
+    <p class="eyebrow">The wedding of</p>
+    <h1 id="cover-title">{invitation.couple.full}</h1>
+    <p class="cover-date">{invitation.dateLabel}</p>
+    <div class="recipient-card">
+      <span>Dear</span>
+      <strong>{invitation.recipient}</strong>
+    </div>
+    <button class="open-button" type="button" data-open-invitation aria-controls="invitation-body">
+      Buka Undangan <span aria-hidden="true">↓</span>
+    </button>
+    <p class="sample-note">Tampilan contoh — konten dapat diatur oleh admin</p>
+  </section>
+
+  <div id="invitation-body" class="invitation-body">
+    <section class="welcome section" aria-labelledby="welcome-title">
+      <p class="eyebrow">Assalamu’alaikum warahmatullahi wabarakatuh</p>
+      <h2 id="welcome-title">Sebuah hari, sebuah cerita</h2>
+      <p>{invitation.intro}</p>
+      <span class="ornament" aria-hidden="true">✳</span>
+    </section>
+
+    <section class="profiles section" aria-labelledby="profiles-title">
+      <p class="eyebrow">Two hearts, one promise</p>
+      <h2 id="profiles-title">Mempelai</h2>
+      <div class="profile-grid">
+        {invitation.profiles.map((profile, index) => (
+          <article class="profile-card">
+            <div class:list={['portrait', index === 0 ? 'portrait-one' : 'portrait-two']} role="img" aria-label={`Area foto ${profile.role}`}>
+              <span aria-hidden="true">{index === 0 ? 'N' : 'A'}</span>
+            </div>
+            <p class="eyebrow">{profile.role}</p>
+            <h3>{profile.name}</h3>
+            <p class="family">{profile.family}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="event section" aria-labelledby="event-title">
+      <p class="eyebrow">Save the date</p>
+      <h2 id="event-title">Hari Bahagia</h2>
+      <article class="event-card">
+        <p class="event-name">{invitation.event.name}</p>
+        <p class="event-date">{invitation.dateLabel}</p>
+        <p class="event-time">Pukul 18.30–21.00 WIB</p>
+        <div class="rule"></div>
+        <h3>{invitation.event.venue}</h3>
+        <p>{invitation.event.address}</p>
+        <div class="event-actions">
+          <a class="text-link" href={invitation.event.mapUrl} target="_blank" rel="noreferrer">Petunjuk arah <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href={calendar} download="undangan-nadia-arka.ics">Simpan tanggal <span aria-hidden="true">↓</span></a>
+        </div>
+      </article>
+    </section>
+
+    <section class="rsvp section" aria-labelledby="rsvp-title">
+      <p class="eyebrow">With joy</p>
+      <h2 id="rsvp-title">Kehadiran Anda</h2>
+      <p>Konfirmasi kehadiran akan tersedia di undangan personal.</p>
+      <div class="rsvp-placeholder" aria-hidden="true"><span>♡</span></div>
+    </section>
+
+    <footer class="closing section">
+      <span class="monogram" aria-hidden="true">N <i>&</i> A</span>
+      <p>{invitation.closing}</p>
+      <p class="eyebrow">With love,</p>
+      <h2>{invitation.couple.full}</h2>
+      <p class="footer-date">{invitation.dateLabel}</p>
+    </footer>
+  </div>
+</main>
+
+<script>
+  document.querySelector('[data-open-invitation]')?.addEventListener('click', () => {
+    const body = document.querySelector<HTMLElement>('#invitation-body');
+    if (!body) return;
+    body.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    document.querySelector<HTMLElement>('#invitation')?.focus({ preventScroll: true });
+  });
+</script>

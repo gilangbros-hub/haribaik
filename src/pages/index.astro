@@ -1,0 +1,17 @@
+---
+import InvitationPage from '../components/InvitationPage.astro';
+import { invitation } from '../data/invitation';
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#122b23" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>{invitation.couple.full} — Undangan Pernikahan</title>
+    <meta name="description" content={`Undangan pernikahan ${invitation.couple.full}`} />
+  </head>
+  <body><InvitationPage invitation={invitation} /></body>
+</html>

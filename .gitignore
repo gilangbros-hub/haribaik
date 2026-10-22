@@ -4,6 +4,7 @@
 .vercel/
 dist/
 node_modules/
+.astro/
 coverage/
 playwright-report/
 test-results/

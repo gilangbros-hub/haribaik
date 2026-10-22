@@ -1,0 +1,20 @@
+{
+  "name": "hari-bahagia",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "node --experimental-strip-types --test"
+  },
+  "dependencies": {
+    "@astrojs/vercel": "^9.0.0",
+    "astro": "^5.14.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.9.0"
+  }
+}

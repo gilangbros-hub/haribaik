@@ -124,6 +124,25 @@ body { margin: 0; min-height: 100svh; background: var(--md-surface); color: var(
 .admin-shell fieldset audio { display: block; width: 100%; margin: 8px 0; }
 .admin-shell fieldset button { margin: 8px 8px 0 0; }
 
+/* ---------- Content editor card layout ---------- */
+.md-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 0 16px; }
+.md-grid-2 > label { margin-bottom: 12px; }
+.md-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 16px; margin-top: 12px; }
+.md-media-grid > fieldset { margin: 0; }
+.md-section-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.md-section-head .md-card-hint { margin: 4px 0 0; }
+.admin-shell fieldset img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+.admin-shell fieldset .md-card-hint { margin: 0 0 12px; }
+.md-btn--icon { min-width: 42px; padding: 0; font-size: 1.1rem; }
+.md-btn--danger-text { color: var(--md-error); }
+.md-btn--danger-text:hover { background: #a4262c14; }
+.md-actionbar {
+  position: sticky; bottom: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px;
+  margin: 0 calc(-1 * clamp(14px, 4vw, 28px)); padding: 14px clamp(14px, 4vw, 28px);
+  background: var(--md-surface); border-top: 1px solid var(--md-outline-variant); box-shadow: 0 -2px 8px #0000000f;
+}
+.md-actionbar .md-status { flex: 1 1 220px; margin: 0; }
+
 /* Login centering */
 .admin-auth { display: grid; place-items: center; min-height: 100svh; padding: 24px; }
 .admin-auth .md-card { width: min(100%, 400px); margin: 0; }

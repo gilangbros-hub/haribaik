@@ -7,7 +7,7 @@ export const GET: APIRoute = async ({ locals }) => {
   try {
     const guests = await getGuests(guestAdminDb());
     const active = guests.filter(({ active }) => active).map(({ name, slug, guest_rsvps }) => ({
-      name, slug, rsvp: guest_rsvps[0]?.status ?? '', answeredAt: guest_rsvps[0]?.answered_at ?? null,
+      name, slug, rsvp: guest_rsvps?.status ?? '', answeredAt: guest_rsvps?.answered_at ?? null,
     }));
     return new Response(exportGuestsCsv(active), { headers: {
       'Content-Type': 'text/csv; charset=utf-8',

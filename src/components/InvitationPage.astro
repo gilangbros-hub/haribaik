@@ -1,5 +1,6 @@
 ---
 import type { WeddingContent } from '../lib/content';
+import Icon from './Icon.astro';
 import { formatWeddingDate, lineage } from '../lib/content';
 import type { WeddingMediaUrls } from '../lib/content/media';
 import type { GuestWish } from '../lib/guests/wishes';
@@ -37,9 +38,9 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
 ---
 
 <aside class="desktop-story" aria-label="Pernikahan">
-  <a class="wordmark" href="#cover-title"><span aria-hidden="true">✳</span> HARI BAHAGIA</a>
+  <a class="wordmark" href="#invitation"><Icon name="flower" /> HARI BAHAGIA</a>
   <div class="story-copy">
-    <p class="eyebrow">Dari dua hati, menjadi satu cerita</p>
+    <p class="eyebrow">Undangan pernikahan</p>
     <p class="story-title">Mugia langgeng<br /><em>salawasna.</em></p>
     <p class="story-translation">Semoga bersama, selamanya.</p>
     <div class="story-rule"></div>
@@ -47,7 +48,7 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
     <p class="story-date">{firstDate}</p>
   </div>
   <img class="story-landscape" src="/images/priangan-landscape.webp" alt="" width="1536" height="1024" />
-  <p class="story-footnote">SEBUAH JANJI YANG TUMBUH BERSAMA <span aria-hidden="true">✧</span></p>
+  <p class="story-footnote">{invitation.coverBrideName || invitation.brideName} & {invitation.coverGroomName || invitation.groomName} <Icon name="flower" /></p>
 </aside>
 
 <main id="invitation" tabindex="-1">
@@ -60,7 +61,7 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
       <img class="cover-botanical botanical-right" src="/images/jasmine-branch.svg" alt="" width="180" height="360" />
       <span class="cover-frame"></span>
     </div>
-    <div class="cover-topline"><span aria-hidden="true">✧</span><span>WILUJENG SUMPING</span><span aria-hidden="true">✧</span></div>
+    <div class="cover-topline"><Icon name="flower" /><span>WILUJENG SUMPING</span><Icon name="flower" /></div>
     <p class="eyebrow">{invitation.title}</p>
     <h1 id="cover-title"><span>{invitation.coverBrideName || invitation.brideName}</span><i>&</i><span>{invitation.coverGroomName || invitation.groomName}</span></h1>
     {firstDate && <p class="cover-date">{firstDate}</p>}
@@ -68,27 +69,29 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
       <span>Kepada Bapak/Ibu/Saudara/i</span>
       <strong>{recipient}</strong>
     </div>
-    <button class="open-button" type="button" data-open-invitation aria-controls="invitation-body">
-      Buka Undangan <span aria-hidden="true">↗</span>
+    <button class="open-button" type="button" data-open-invitation aria-controls="invitation-body" aria-expanded="false">
+      Buka Undangan <Icon name="arrow" />
     </button>
     {media?.music && <><button class="music-button" type="button" data-music-toggle aria-pressed="false">Putar musik</button><audio data-invitation-audio src={media.music} preload="none" aria-label="Musik undangan"></audio><p data-audio-status role="status" aria-live="polite"></p></>}
-    {preview && <p class="sample-note">Preview draf — hanya terlihat oleh admin</p>}
+    {preview && <p class="sample-note">Pratinjau — belum dipublikasikan</p>}
   </section>
 
-  <div id="invitation-body" class="invitation-body" tabindex="-1">
+  <noscript><style>#invitation-body[hidden] { display: block !important; } html:has(#invitation-body[hidden]) { overflow: auto; } [data-open-invitation] { display: none; }</style><p class="no-script-note">Silakan gulir untuk membaca undangan. Aktifkan JavaScript untuk mengirim ucapan.</p></noscript>
+  <div id="invitation-body" class="invitation-body" tabindex="-1" hidden>
     <section class="welcome section" aria-labelledby="welcome-title">
       <span class="section-number" aria-hidden="true">01 / PAMBUKA</span>
       <img class="welcome-flower" src="/images/jasmine-branch.svg" alt="" width="100" height="200" loading="lazy" />
       <p class="eyebrow">{invitation.greeting}</p>
-      <h2 id="welcome-title">Bersama, merajut<br /><em>cerita selamanya.</em></h2>
+      <h2 id="welcome-title">Dengan syukur,<br /><em>kami mengundang Anda.</em></h2>
+      <p>Kami akan menikah. Dengan restu keluarga, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan mendoakan pernikahan kami.</p>
       {invitation.description && <p>{invitation.description}</p>}
-      <span class="ornament" aria-hidden="true">✳</span>
+      <span class="ornament"><Icon name="flower" /></span>
     </section>
 
     <section id="mempelai" class="profiles section" aria-labelledby="profiles-title">
       <span class="section-number" aria-hidden="true">02 / DUA HATI</span>
       <p class="eyebrow">Silih asih, silih asah, silih asuh</p>
-      <h2 id="profiles-title">Kami yang <em>berbahagia</em></h2>
+      <h2 id="profiles-title">Kedua <em>mempelai</em></h2>
       <div class="profile-grid">
           {profiles.map((profile, index) => {
             const image = index === 0 ? media?.brideImage : media?.groomImage;
@@ -108,6 +111,7 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
 
     {(storyBlocks.length > 0 || media?.storyImage) && (
       <section id="cerita" class="story section" aria-labelledby="story-title" style={media?.storyImage ? `--story-bg: url("${media.storyImage}")` : undefined}>
+        <p class="eyebrow">Sebelum hari ini</p>
         <h2 id="story-title">Cerita <em>Kami</em></h2>
         <div class="story-body">
           <div class="story-text">
@@ -128,15 +132,15 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
     {invitation.events.map((event, index) => (
       <section class="event section" aria-labelledby={`event-title-${index}`}>
         <span class="section-number" aria-hidden="true">{String(index + 3).padStart(2, '0')} / WAKTU & TEMPAT</span>
-        <p class="eyebrow">Hadir dan menjadi bagian cerita kami</p>
+        <p class="eyebrow">Waktu & tempat</p>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
         <article class="event-card">
-          <p class="event-name">{event.name}</p>
+          <span class="event-symbol"><Icon name="calendar" /></span>
           <p class="event-date">{event.startsAt && formatWeddingDate(event.startsAt, invitation.timeZone)}</p>
           <p class="event-time">
             {event.startsAt && formatWeddingDate(event.startsAt, invitation.timeZone, { hour: '2-digit', minute: '2-digit' })}
             {event.endsAt && `–${formatWeddingDate(event.endsAt, invitation.timeZone, { hour: '2-digit', minute: '2-digit' })}`}
-            {` ${invitation.timeZone}`}
+            {` ${{ 'Asia/Jakarta': 'WIB', 'Asia/Makassar': 'WITA', 'Asia/Jayapura': 'WIT' }[invitation.timeZone] ?? invitation.timeZone}`}
           </p>
           {event.startsAt && event.endsAt && event.startsAt.slice(0, 10) !== event.endsAt.slice(0, 10) && <p class="event-time">Sampai {formatWeddingDate(event.endsAt, invitation.timeZone)}</p>}
           <div class="rule"></div>
@@ -146,12 +150,12 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
             <div class="event-map">
               {/* Keyless embed searches venue + address; the admin's map link may be a short link that cannot embed. */}
               <iframe src={`https://maps.google.com/maps?q=${encodeURIComponent([event.venue, event.address].filter(Boolean).join(', '))}&z=16&output=embed`} title={`Peta lokasi ${event.venue || event.name}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
-              {event.mapUrl && <a class="map-open" href={event.mapUrl} target="_blank" rel="noreferrer">Buka di Maps <span aria-hidden="true">↗</span></a>}
+              {event.mapUrl && <a class="map-open" href={event.mapUrl} target="_blank" rel="noreferrer"><Icon name="pin" /> Buka peta</a>}
             </div>
           )}
           <div class="event-actions">
-            {event.mapUrl && <a class="text-link" href={event.mapUrl} target="_blank" rel="noreferrer">Petunjuk arah <span aria-hidden="true">↗</span></a>}
-            <a class="text-link" href={calendarUrl} download="undangan.ics">Simpan tanggal <span aria-hidden="true">↓</span></a>
+            {event.mapUrl && <a class="text-link" href={event.mapUrl} target="_blank" rel="noreferrer"><Icon name="pin" /> Petunjuk arah</a>}
+            <a class="text-link" href={calendarUrl} download="undangan.ics"><Icon name="calendar" /> Simpan tanggal</a>
           </div>
         </article>
       </section>
@@ -160,19 +164,20 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
 
     {media?.gallery.some(Boolean) && (
       <section id="galeri" class="gallery section" aria-labelledby="gallery-title">
-        <p class="eyebrow">Kepingan cerita kita</p>
-        <h2 id="gallery-title">Yang ingin kami <em>kenang.</em></h2>
+        <p class="eyebrow">Album foto</p>
+        <h2 id="gallery-title">Beberapa momen <em>bersama.</em></h2>
         <div class="gallery-grid">
           {media.gallery.map((url, index) => url && invitation.gallery[index] && <img src={url} alt={invitation.gallery[index].alt} width="600" height="600" loading="lazy" decoding="async" />)}
         </div>
       </section>
     )}
 
+    {guestSlug && (
     <section id="kehadiran" class="rsvp section" aria-labelledby="rsvp-title">
-      <span class="ornament" aria-hidden="true">✳</span>
-      <p class="eyebrow">Sebuah kebahagiaan untuk kami</p>
-      <h2 id="rsvp-title">Sampai jumpa<br /><em>di hari bahagia.</em></h2>
-      {guestSlug ? <>
+      <span class="ornament"><Icon name="heart" /></span>
+      <p class="eyebrow">Konfirmasi kehadiran</p>
+      <h2 id="rsvp-title">Sampai jumpa<br /><em>di hari pernikahan.</em></h2>
+      <>
         <p>Undangan ini berlaku untuk satu orang.</p>
         <form data-rsvp-form data-endpoint={`/api/guests/${encodeURIComponent(guestSlug)}/rsvp`}>
           <fieldset>
@@ -183,14 +188,16 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
           <button type="submit">Simpan jawaban</button>
           <p data-rsvp-status role="status" aria-live="polite">{rsvpStatus === 'attending' ? 'Jawaban tersimpan: hadir.' : rsvpStatus === 'declined' ? 'Jawaban tersimpan: tidak hadir.' : ''}</p>
         </form>
-      </> : <p>Konfirmasi kehadiran tersedia melalui tautan undangan personal.</p>}
+      </>
     </section>
+    )}
 
     {accounts.length > 0 && (
       <section id="hadiah" class="gift section" aria-labelledby="gift-title">
+        <span class="section-icon"><Icon name="gift" /></span>
         <p class="eyebrow">Amplop digital</p>
         <h2 id="gift-title">Tanda <em>kasih</em></h2>
-        <p class="gift-hint">Transfer langsung ke rekening berikut.</p>
+        <p class="gift-hint">Doa dan kehadiran Anda sudah sangat berarti. Jika ingin memberikan hadiah, Anda dapat menggunakan rekening berikut.</p>
         <div class="gift-list">
           {accounts.map((account) => (
             <article class="gift-card">
@@ -206,13 +213,15 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
     )}
 
     <section id="ucapan" class="wishes section" aria-labelledby="wishes-title">
+      <span class="section-icon"><Icon name="message" /></span>
       <p class="eyebrow">Ucapan & doa</p>
-      <h2 id="wishes-title">Titip <em>doa terbaikmu</em></h2>
+      <h2 id="wishes-title">Sepatah kata,<br /><em>sebuah doa.</em></h2>
+      <p class="section-intro">Ada pesan untuk kami? Tuliskan di sini, termasuk jika Anda belum bisa hadir. Ucapan akan tampil di undangan ini.</p>
       {preview ? <p class="wish-note">Formulir ucapan tampil di undangan asli.</p> : (
         <form class="wish-form" data-wish-form data-endpoint="/api/wishes">
-          <label><span>Nama</span><input name="name" maxlength="80" autocomplete="name" value={recipient === 'Sahabat dan keluarga' ? '' : recipient} placeholder="Nama Anda" /></label>
-          <label><span>Ucapan</span><textarea name="message" maxlength="2000" rows="4" placeholder="Tulis ucapan dan doa untuk kami…"></textarea></label>
-          <button type="submit">Kirim ucapan <span aria-hidden="true">→</span></button>
+          <label><span>Nama (opsional)</span><input name="name" maxlength="80" autocomplete="name" value={recipient === 'Sahabat dan keluarga' ? '' : recipient} placeholder="Nama Anda" /></label>
+          <label><span>Ucapan</span><textarea name="message" maxlength="2000" required rows="4" placeholder="Tulis ucapan dan doa untuk kami…"></textarea></label>
+          <button type="submit">Kirim ucapan <Icon name="arrow" /></button>
           <p data-wish-status role="status" aria-live="polite"></p>
         </form>
       )}
@@ -220,7 +229,7 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
 
     <section class="wish-wall section" aria-labelledby="wall-title">
       <p class="eyebrow"><span data-wish-count>{wishes.length}</span> ucapan</p>
-      <h2 id="wall-title">Untaian <em>doa</em></h2>
+      <h2 id="wall-title">Dari orang-orang <em>tersayang</em></h2>
       <ul class="wish-list" data-wish-list>
         {wishes.map((wish) => (
           <li class="wish-item">
@@ -235,6 +244,22 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
       {wishes.length === 0 && <p class="wish-note" data-wish-empty>Jadilah yang pertama mengirim doa.</p>}
     </section>
 
+    <section id="panduan" class="guest-guide section" aria-labelledby="guide-title">
+      <p class="eyebrow">Sebelum berangkat</p>
+      <h2 id="guide-title">Agar lebih <em>mudah.</em></h2>
+      <p class="section-intro">Beberapa hal untuk membantu Anda menyiapkan kunjungan.</p>
+      <div class="guide-steps">
+        <article><Icon name="calendar" /><div><h3>Simpan jadwalnya</h3><p>Gunakan “Simpan tanggal” pada bagian acara untuk menambahkan jadwal ke kalender Anda. Periksa kembali waktu yang tertera.</p></div></article>
+        <article><Icon name="pin" /><div><h3>Rencanakan perjalanan</h3><p>Buka “Petunjuk arah” untuk melihat rute ke lokasi. Beri waktu tambahan untuk perjalanan dan mencari tempat parkir.</p></div></article>
+        {guestSlug && <article><Icon name="heart" /><div><h3>Kabari kehadiran Anda</h3><p>Isi konfirmasi kehadiran melalui undangan ini agar kami dapat menyiapkan penyambutan.</p></div></article>}
+      </div>
+      <div class="guest-faq">
+        <details><summary>Bagaimana cara menyimpan jadwal?</summary><p>Ketuk “Simpan tanggal”, lalu buka berkas undangan.ics dengan aplikasi kalender. Konfirmasikan penambahan acara di aplikasi tersebut.</p></details>
+        <details><summary>Bagaimana jika peta tidak tampil?</summary><p>Ketuk “Petunjuk arah” untuk membuka peta di tab baru. Alamat lengkap juga tercantum pada bagian acara.</p></details>
+        <details><summary>Apakah harus memberikan hadiah?</summary><p>Tidak. Kami berterima kasih atas doa dan perhatian Anda, dengan atau tanpa hadiah.</p></details>
+      </div>
+    </section>
+
     <footer class="closing section" aria-labelledby="closing-title">
       <div class="closing-card">
         <span class="monogram" aria-hidden="true">{invitation.brideName.charAt(0)} <i>&</i> {invitation.groomName.charAt(0)}</span>
@@ -247,15 +272,15 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
         {families.length > 0 && <p class="closing-family">Beserta keluarga besar<br />{families.join(' · ')}</p>}
         {firstDate && <p class="footer-date">{firstDate}</p>}
       </div>
-      <p class="made-with">HARI BAHAGIA <span aria-hidden="true">✧</span> MUGIA LANGGENG SALAWASNA</p>
+      <p class="made-with">HARI BAHAGIA <Icon name="flower" /> MUGIA LANGGENG SALAWASNA</p>
     </footer>
   </div>
   <nav class="invitation-nav" aria-label="Bagian undangan">
-    <a href="#cover-title" aria-label="Sampul"><span aria-hidden="true">⌂</span></a>
+    <a href="#invitation-body" aria-label="Pembuka"><Icon name="home" /></a>
     <a href="#mempelai">Mempelai</a>
     <a href="#acara">Acara</a>
     {media?.gallery.some(Boolean) && <a href="#galeri">Galeri</a>}
-    <a href="#kehadiran">RSVP</a>
+    {guestSlug && <a href="#kehadiran">RSVP</a>}
     <a href="#ucapan">Ucapan</a>
   </nav>
 </main>
@@ -330,16 +355,30 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
     if (audio.paused) startMusic();
     else audio.pause();
   });
-  document.querySelector('[data-open-invitation]')?.addEventListener('click', () => {
+  document.querySelector<HTMLButtonElement>('[data-open-invitation]')?.addEventListener('click', async (event) => {
     const body = document.querySelector<HTMLElement>('#invitation-body');
-    if (!body) return;
-    document.querySelector('#invitation')?.classList.add('is-open');
+    const cover = document.querySelector<HTMLElement>('.cover');
+    if (!body || !cover) return;
+    const button = event.currentTarget as HTMLButtonElement;
+    button.disabled = true;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     startMusic();
-    body.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    if (!reducedMotion) {
+      await cover.animate([{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-36px)' }], { duration: 550, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' }).finished.catch(() => {});
+    }
+    // Keep audio controls available after the cover leaves the document flow.
+    if (musicButton) document.querySelector('#invitation')?.append(musicButton);
+    if (audioStatus) document.querySelector('#invitation')?.append(audioStatus);
+    cover.hidden = true;
+    body.hidden = false;
+    button.setAttribute('aria-expanded', 'true');
+    document.querySelector('#invitation')?.classList.add('is-open');
+    window.scrollTo({ top: 0, behavior: 'instant' });
     body.focus({ preventScroll: true });
+    if (!reducedMotion) body.animate([{ opacity: 0, transform: 'translateY(28px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 700, easing: 'cubic-bezier(.22,1,.36,1)' });
   });
 
-  const sections = document.querySelectorAll<HTMLElement>('.invitation-body .section');
+  const sections = document.querySelectorAll<HTMLElement>('.section > .eyebrow, .section > h2, .section > p:not(.eyebrow), .profile-card, .story-body, .event-card, .gallery-grid img, .gift-card, .wish-form, .wish-list, .guide-steps article, .guest-faq, .closing-card');
   if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -348,7 +387,7 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.08 });
+    }, { threshold: 0, rootMargin: '0px 0px -35px 0px' });
     sections.forEach((section) => { section.classList.add('will-reveal'); observer.observe(section); });
   }
 </script>

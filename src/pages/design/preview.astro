@@ -7,8 +7,11 @@ if (!import.meta.env.DEV) return new Response('Not found', { status: 404 });
 const invitation = {
   ...emptyWeddingContent,
   brideName: 'Seheila', groomName: 'Dhana',
+  brideBank: 'Bank contoh — jangan ditransfer', brideAccount: '0000000000',
+  groomBank: 'Bank contoh — jangan ditransfer', groomAccount: '0000000000',
   coverImage: { path: 'preview/couple.webp', alt: 'Seheila dan Dhana berfoto bersama' },
-  description: 'Dengan penuh rasa syukur dan bahagia, kami mengundang Bapak/Ibu/Saudara/i untuk menjadi bagian dari awal perjalanan baru kami. Doa dan kehadiran Anda adalah hadiah terindah bagi kami.',
+  description: 'Kami berharap dapat bertemu dan berbagi kebahagiaan dengan keluarga serta sahabat di hari pernikahan kami.',
+  storyText: '# Awal perkenalan\n\nPercakapan sehari-hari membuat kami saling mengenal. Dari sana, kami mulai meluangkan lebih banyak waktu untuk satu sama lain.\n\n# Menuju pernikahan\n\nKini kami bersiap menikah, dengan restu keluarga dan doa orang-orang terdekat. Terima kasih telah menemani kami sampai di hari ini.',
   events: [
     { name: 'Akad Nikah', startsAt: '2026-12-12T08:00', endsAt: '2026-12-12T10:00', venue: 'Gedung Pernikahan', address: 'Bandung, Jawa Barat · Lokasi contoh untuk preview desain', mapUrl: 'https://maps.google.com/?q=Bandung' },
     { name: 'Resepsi', startsAt: '2026-12-12T11:00', endsAt: '2026-12-12T14:00', venue: 'Gedung Pernikahan', address: 'Bandung, Jawa Barat · Lokasi contoh untuk preview desain', mapUrl: 'https://maps.google.com/?q=Bandung' },
@@ -26,5 +29,5 @@ const invitation = {
     <meta name="theme-color" content="#183e33" />
     <title>Preview desain Sunda modern — Data contoh</title>
   </head>
-  <body><InvitationPage invitation={invitation} recipient="Sahabat dan keluarga" media={{ coverImage: '/images/couple-preview.webp', brideImage: null, groomImage: null, storyImage: null, gallery: [], music: null }} /></body>
+  <body><InvitationPage invitation={invitation} recipient="Sahabat dan keluarga" preview media={{ coverImage: '/images/couple-preview.webp', brideImage: null, groomImage: null, storyImage: '/images/couple-preview.webp', gallery: [], music: null }} /></body>
 </html>

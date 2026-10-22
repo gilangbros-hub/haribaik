@@ -1,6 +1,6 @@
 ---
 import '../../styles/admin.css';
-import { emptyWeddingContent } from '../../lib/content';
+import { birthOrders, childKinds, emptyWeddingContent } from '../../lib/content';
 import { readWeddingDraft } from '../../lib/content/store';
 import { resolveWeddingMedia } from '../../lib/content/media';
 
@@ -49,9 +49,26 @@ if (Astro.locals.supabase) {
           <label class="md-field"><span>Judul / sapaan utama</span><input name="title" maxlength="120" value={content.title} /></label>
           <label class="md-field"><span>Ucapan pembuka</span><textarea name="greeting" maxlength="300" rows="2">{content.greeting}</textarea></label>
           <div class="md-grid-2">
-            <label class="md-field"><span>Nama CPW</span><input name="brideName" maxlength="120" value={content.brideName} /></label>
-            <label class="md-field"><span>Nama CPP</span><input name="groomName" maxlength="120" value={content.groomName} /></label>
+            <label class="md-field"><span>Nama CPW di sampul</span><input name="coverBrideName" maxlength="120" value={content.coverBrideName} placeholder={content.brideName} /></label>
+            <label class="md-field"><span>Nama CPP di sampul</span><input name="coverGroomName" maxlength="120" value={content.coverGroomName} placeholder={content.groomName} /></label>
           </div>
+          <p class="md-card-hint">Kosongkan untuk memakai nama mempelai di bawah.</p>
+          <div class="md-grid-2">
+            {[
+              { who: 'CPW', key: 'bride', name: content.brideName, child: content.brideChild ?? 'Putri', order: content.brideOrder ?? 'Pertama', parents: content.brideParents ?? '' },
+              { who: 'CPP', key: 'groom', name: content.groomName, child: content.groomChild ?? 'Putra', order: content.groomOrder ?? 'Pertama', parents: content.groomParents ?? '' },
+            ].map((spouse) => (
+              <div>
+                <label class="md-field"><span>Nama {spouse.who} (bagian mempelai)</span><input name={`${spouse.key}Name`} maxlength="120" value={spouse.name} /></label>
+                <div class="md-grid-2">
+                  <label class="md-field"><span>Putra/Putri</span><select name={`${spouse.key}Child`}>{childKinds.map((option) => <option selected={option === spouse.child}>{option}</option>)}</select></label>
+                  <label class="md-field"><span>Anak ke-</span><select name={`${spouse.key}Order`}>{birthOrders.map((option) => <option selected={option === spouse.order}>{option}</option>)}</select></label>
+                </div>
+                <label class="md-field"><span>Nama Kedua Orang Tua</span><input name={`${spouse.key}Parents`} maxlength="300" value={spouse.parents} placeholder="Bapak ... & Ibu ..." /></label>
+              </div>
+            ))}
+          </div>
+          <p class="md-card-hint">Tampil sebagai: "Putri Pertama dari Bapak ... & Ibu ...". Kosongkan nama orang tua untuk menyembunyikan.</p>
           <label class="md-field"><span>Deskripsi opsional</span><textarea name="description" maxlength="2000" rows="4">{content.description}</textarea></label>
           <label class="md-field"><span>Zona waktu (IANA, misalnya Asia/Jakarta)</span><input name="timeZone" maxlength="80" value={content.timeZone} /></label>
         </section>
@@ -64,6 +81,7 @@ if (Astro.locals.supabase) {
               { key: 'coverImage', label: 'Foto pasangan di sampul', image: content.coverImage, url: mediaUrls?.coverImage },
               { key: 'brideImage', label: 'Foto CPW', image: content.brideImage, url: mediaUrls?.brideImage },
               { key: 'groomImage', label: 'Foto CPP', image: content.groomImage, url: mediaUrls?.groomImage },
+              { key: 'storyImage', label: 'Foto Cerita Kami', image: content.storyImage, url: mediaUrls?.storyImage },
             ].map(({ key, label, image, url }) => (
               <fieldset data-media-field data-key={key} data-path={image?.path ?? ''} data-preview={url ?? ''}>
                 <legend>{label}</legend>
@@ -74,6 +92,12 @@ if (Astro.locals.supabase) {
               </fieldset>
             ))}
           </div>
+        </section>
+
+        <section class="md-card" aria-labelledby="sec-story">
+          <h2 id="sec-story">Cerita Kami</h2>
+          <p class="md-card-hint">Tampil setelah bagian mempelai. Pisahkan paragraf dengan baris kosong. Awali baris dengan # untuk subjudul, misalnya "# Awal bertemu". Fotonya diunggah di kartu Foto undangan. Kosongkan untuk menyembunyikan.</p>
+          <label class="md-field"><span>Cerita</span><textarea name="storyText" maxlength="3000" rows="8">{content.storyText ?? ''}</textarea></label>
         </section>
 
         <section class="md-card" aria-labelledby="sec-gallery">
@@ -147,6 +171,22 @@ if (Astro.locals.supabase) {
           </div>
         </section>
 
+        <section class="md-card" aria-labelledby="sec-gift">
+          <h2 id="sec-gift">Amplop digital (transfer)</h2>
+          <p class="md-card-hint">Atas nama memakai nama mempelai. Kosongkan semua untuk menyembunyikan bagian ini.</p>
+          <div class="md-grid-2">
+            {[
+              { who: 'CPW', key: 'bride', bank: content.brideBank ?? '', account: content.brideAccount ?? '' },
+              { who: 'CPP', key: 'groom', bank: content.groomBank ?? '', account: content.groomAccount ?? '' },
+            ].map((spouse) => (
+              <div>
+                <label class="md-field"><span>Bank {spouse.who}</span><input name={`${spouse.key}Bank`} maxlength="80" value={spouse.bank} placeholder="BCA" /></label>
+                <label class="md-field"><span>No. Rekening {spouse.who}</span><input name={`${spouse.key}Account`} maxlength="40" inputmode="numeric" value={spouse.account} /></label>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section class="md-card" aria-labelledby="sec-closing">
           <h2 id="sec-closing">Penutup</h2>
           <label class="md-field"><span>Teks penutup</span><textarea name="closing" maxlength="1000" rows="3">{content.closing}</textarea></label>
@@ -196,6 +236,7 @@ if (Astro.locals.supabase) {
       coverImage: imageFromField(fields.find((field) => field.dataset.key === 'coverImage')!),
       brideImage: imageFromField(fields.find((field) => field.dataset.key === 'brideImage')!),
       groomImage: imageFromField(fields.find((field) => field.dataset.key === 'groomImage')!),
+      storyImage: imageFromField(fields.find((field) => field.dataset.key === 'storyImage')!),
       gallery: [...gallery.querySelectorAll<HTMLElement>('[data-gallery-item]')].filter((item) => item.dataset.path).map((item) => ({ path: item.dataset.path!, alt: item.querySelector<HTMLInputElement>('[data-alt]')!.value.trim() })),
       musicPath: fields.find((field) => field.dataset.key === 'musicPath')?.dataset.path || null,
     };

@@ -11,11 +11,32 @@ export type WeddingEvent = {
 
 export type WeddingImage = { path: string; alt: string };
 
+export const childKinds = ['Putri', 'Putra'] as const;
+export const birthOrders = ['Pertama', 'Kedua', 'Ketiga', 'Keempat'] as const;
+export type ChildKind = (typeof childKinds)[number];
+export type BirthOrder = (typeof birthOrders)[number];
+
+// "Putri Pertama dari Bapak A & Ibu B"; empty when no parents are set.
+export const lineage = (child: string, order: string, parents: string) => parents ? `${child} ${order} dari ${parents}` : '';
+
 export type WeddingContent = {
   title: string;
   greeting: string;
   brideName: string;
   groomName: string;
+  // Cover-page names; empty means "use brideName/groomName".
+  coverBrideName: string;
+  coverGroomName: string;
+  brideChild: ChildKind;
+  brideOrder: BirthOrder;
+  brideParents: string;
+  groomChild: ChildKind;
+  groomOrder: BirthOrder;
+  groomParents: string;
+  brideBank: string;
+  brideAccount: string;
+  groomBank: string;
+  groomAccount: string;
   description: string;
   timeZone: string;
   events: WeddingEvent[];
@@ -23,6 +44,8 @@ export type WeddingContent = {
   coverImage: WeddingImage | null;
   brideImage: WeddingImage | null;
   groomImage: WeddingImage | null;
+  storyText: string;
+  storyImage: WeddingImage | null;
   gallery: WeddingImage[];
   musicPath: string | null;
 };
@@ -75,6 +98,27 @@ export function validateWeddingContent(value: unknown, requireComplete = true): 
   const greeting = text('greeting', 'Sapaan', 300);
   const brideName = text('brideName', 'Nama CPW', 120);
   const groomName = text('groomName', 'Nama CPP', 120);
+  // Older saved content has no cover names, so a missing key is allowed.
+  const coverBrideName = value.coverBrideName === undefined ? '' : text('coverBrideName', 'Nama CPW di sampul', 120, false);
+  const coverGroomName = value.coverGroomName === undefined ? '' : text('coverGroomName', 'Nama CPP di sampul', 120, false);
+  const pick = <T extends string>(key: string, label: string, options: readonly T[], fallback: T): T => {
+    const item = value[key];
+    if (item === undefined) return fallback;
+    if (typeof item === 'string' && (options as readonly string[]).includes(item)) return item as T;
+    errors.push(`${label} tidak valid.`);
+    return fallback;
+  };
+  const brideChild = pick('brideChild', 'Putra/Putri CPW', childKinds, 'Putri');
+  const brideOrder = pick('brideOrder', 'Anak ke- CPW', birthOrders, 'Pertama');
+  const brideParents = value.brideParents === undefined ? '' : text('brideParents', 'Nama orang tua CPW', 300, false);
+  const groomChild = pick('groomChild', 'Putra/Putri CPP', childKinds, 'Putra');
+  const groomOrder = pick('groomOrder', 'Anak ke- CPP', birthOrders, 'Pertama');
+  const groomParents = value.groomParents === undefined ? '' : text('groomParents', 'Nama orang tua CPP', 300, false);
+  const optional = (key: string, label: string, max: number) => value[key] === undefined ? '' : text(key, label, max, false);
+  const brideBank = optional('brideBank', 'Bank CPW', 80);
+  const brideAccount = optional('brideAccount', 'No. rekening CPW', 40);
+  const groomBank = optional('groomBank', 'Bank CPP', 80);
+  const groomAccount = optional('groomAccount', 'No. rekening CPP', 40);
   const description = text('description', 'Deskripsi', 2000, false);
   const timeZone = text('timeZone', 'Zona waktu', 80);
   const closing = text('closing', 'Teks penutup', 1000);
@@ -90,6 +134,8 @@ export function validateWeddingContent(value: unknown, requireComplete = true): 
   const coverImage = image('coverImage', 'Foto sampul');
   const brideImage = image('brideImage', 'Foto CPW');
   const groomImage = image('groomImage', 'Foto CPP');
+  const storyImage = image('storyImage', 'Foto cerita kami');
+  const storyText = optional('storyText', 'Cerita kami', 3000);
   const sourceGallery = value.gallery === undefined ? [] : value.gallery;
   if (!Array.isArray(sourceGallery) || sourceGallery.length > 12) errors.push('Galeri maksimal berisi 12 foto.');
   const gallery = (Array.isArray(sourceGallery) ? sourceGallery : []).slice(0, 12).map((item, index) => {
@@ -147,10 +193,10 @@ export function validateWeddingContent(value: unknown, requireComplete = true): 
   });
 
   if (errors.length) return { ok: false, errors };
-  const mediaPaths = [coverImage?.path, brideImage?.path, groomImage?.path, ...gallery.map((item) => item.path), musicPath].filter(Boolean);
+  const mediaPaths = [coverImage?.path, brideImage?.path, groomImage?.path, storyImage?.path, ...gallery.map((item) => item.path), musicPath].filter(Boolean);
   if (new Set(mediaPaths).size !== mediaPaths.length) errors.push('Objek media tidak boleh dipakai lebih dari satu kali.');
   if (errors.length) return { ok: false, errors };
-  return { ok: true, content: { title, greeting, brideName, groomName, description, timeZone, events, closing, coverImage, brideImage, groomImage, gallery, musicPath: musicPath as string | null } };
+  return { ok: true, content: { title, greeting, brideName, groomName, coverBrideName, coverGroomName, brideChild, brideOrder, brideParents, groomChild, groomOrder, groomParents, brideBank, brideAccount, groomBank, groomAccount, description, timeZone, events, closing, coverImage, brideImage, groomImage, storyText, storyImage, gallery, musicPath: musicPath as string | null } };
 }
 
 export function formatWeddingDate(value: string, timeZone: string, options: Intl.DateTimeFormatOptions = { dateStyle: 'full' }): string {
@@ -196,7 +242,8 @@ export function buildCalendar(content: WeddingContent, now = new Date()): string
 
 export const emptyWeddingContent: WeddingContent = {
   title: 'Undangan Pernikahan', greeting: 'Assalamu’alaikum warahmatullahi wabarakatuh',
-  brideName: '', groomName: '', description: '', timeZone: 'Asia/Jakarta',
+  brideName: '', groomName: '', coverBrideName: '', coverGroomName: '',
+  brideChild: 'Putri', brideOrder: 'Pertama', brideParents: '', groomChild: 'Putra', groomOrder: 'Pertama', groomParents: '', brideBank: '', brideAccount: '', groomBank: '', groomAccount: '', description: '', timeZone: 'Asia/Jakarta',
   events: [{ name: '', startsAt: '', endsAt: '', venue: '', address: '', mapUrl: '' }], closing: '',
-  coverImage: null, brideImage: null, groomImage: null, gallery: [], musicPath: null,
+  coverImage: null, brideImage: null, groomImage: null, storyText: '', storyImage: null, gallery: [], musicPath: null,
 };

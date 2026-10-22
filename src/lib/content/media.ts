@@ -29,7 +29,7 @@ export function stripMp3Tags(bytes: Uint8Array): Uint8Array {
   return result;
 }
 
-export type WeddingMediaUrls = { coverImage: string | null; brideImage: string | null; groomImage: string | null; gallery: (string | null)[]; music: string | null };
+export type WeddingMediaUrls = { coverImage: string | null; brideImage: string | null; groomImage: string | null; storyImage: string | null; gallery: (string | null)[]; music: string | null };
 
 export async function authorizeWeddingUpload(client: SupabaseClient, userId: string, kind: unknown, contentType: unknown, size: unknown) {
   if (!validateUpload(kind, contentType, size)) throw new Error(`Jenis file atau ukuran tidak didukung. Foto maksimal ${IMAGE_MAX_BYTES / 1024 / 1024} MB; MP3 maksimal ${AUDIO_MAX_BYTES / 1024 / 1024} MB.`);
@@ -79,6 +79,7 @@ export async function resolveWeddingMedia(client: SupabaseClient, content: Weddi
     coverImage: await sign(content.coverImage?.path ?? null),
     brideImage: await sign(content.brideImage?.path ?? null),
     groomImage: await sign(content.groomImage?.path ?? null),
+    storyImage: await sign(content.storyImage?.path ?? null),
     gallery: await Promise.all(content.gallery.map((image) => sign(image.path))),
     music: await sign(content.musicPath),
   };

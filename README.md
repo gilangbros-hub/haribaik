@@ -1,5 +1,7 @@
 # HariBahagia
 
+See [the release and recovery runbook](docs/operations/release-readiness.md) for environment isolation, deployment, backup/restore, and the manual pre-release checklist.
+
 ## Admin authentication setup
 
 Create the single admin account in the Supabase Auth dashboard; the app has no sign-up route. Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and that account's UUID as `ADMIN_USER_ID` in the server environment for each Vercel environment. The service-role key is used only by the server to finalize uploads; never expose it to browser code. Astro reads these values when building, so set them before deploying. Copy `.env.example` for local setup and keep real credentials out of Git.

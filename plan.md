@@ -1,8 +1,8 @@
 # HariBahagia — Rencana Implementasi
 
-Status: perencanaan, belum ada implementasi aplikasi.
+Status: implementasi aplikasi lokal selesai; belum diprovisikan atau dirilis.
 Tanggal pembaruan: 22 Oktober 2026.
-Keputusan hasil wawancara telah dikonfirmasi pengguna; dokumen ini belum menyatakan aplikasi sudah dibangun atau diuji.
+Fitur versi pertama sudah diimplementasikan dan diperiksa secara lokal. Supabase/Vercel/GitHub/domain belum disiapkan; smoke test browser produksi, backup-restore, verifikasi visual, dan izin aset tetap menunggu provisioning serta tindakan pemilik.
 
 ## 1. Tujuan dan keputusan
 
@@ -27,7 +27,7 @@ Membangun aplikasi undangan untuk satu pernikahan dengan dua sisi: pengelolaan o
 | Database dan layanan | Supabase PostgreSQL, Auth, dan Storage; menargetkan free tier |
 | Source dan deployment | Repository GitHub pribadi privat dihubungkan ke Vercel; akun dan URL repo menyusul |
 | Target siap dibagikan | Pertengahan hingga akhir November 2026; tanggal pasti menyusul |
-| Tahap sekarang | Memperbarui rencana sesuai kesepakatan; tidak membangun atau menerbitkan aplikasi |
+| Tahap sekarang | Implementasi lokal terintegrasi; persiapan lingkungan dan rilis belum dilakukan |
 
 Draf/publikasi, RSVP hadir/tidak hadir, impor/ekspor CSV, foto per bagian, galeri grid, dan musik sudah disepakati. Admin melihat jawaban RSVP, tetapi tidak mengisi atau mengubahnya.
 
@@ -363,7 +363,7 @@ Saat implementasi, perubahan skema atau format konten harus menjangkau form, ren
 
 - Hanya admin boleh upload.
 - Validasi ukuran, tipe isi, dan format file; jangan percaya ekstensi/MIME dari klien saja.
-- Batas awal usulan: JPEG/PNG/WebP hingga 10 MB per foto, MP3 hingga 20 MB, dikirim langsung ke Supabase Storage; konfirmasikan terhadap konfigurasi bucket dan total kuota sebelum implementasi.
+- Konfigurasi aplikasi saat ini: foto maksimum 10 MB, MP3 maksimum 20 MB, dan bucket `wedding-media` maksimum 20 MB per file. Periksa lagi batas dan kuota proyek Storage nyata sebelum rilis.
 - Jangan izinkan HTML, SVG upload, atau executable pada versi pertama.
 - Gunakan nama/storage key buatan server untuk mencegah path traversal dan penimpaan file.
 - Jangan memasukkan foto asli berukuran besar langsung ke halaman tamu; sediakan ukuran tampilan yang sesuai dan hilangkan metadata lokasi bila ada.
@@ -502,4 +502,4 @@ Tidak perlu menunggu konten final untuk menyelesaikan desain dan alur aplikasi.
 
 Keputusan fitur, akses melalui tautan saja, format/alur CSV, acuan visual utama dan tambahan, serta Astro + TypeScript + Supabase sudah disepakati. Tidak perlu meminta konfirmasi ulang atas keputusan tersebut.
 
-Risiko yang sudah diketahui: URL berbasis nama bukan autentikasi tamu; aset simpanan belum lengkap; tampilan/interaksi belum diverifikasi secara visual. Jangan menandai implementasi, pengujian, atau fidelity selesai hanya berdasarkan dokumen ini.
+Risiko yang sudah diketahui: URL berbasis nama bukan autentikasi tamu; aset final dan izinnya belum dikonfirmasi; tampilan/interaksi belum diverifikasi secara visual; aplikasi belum punya lingkungan produksi. Checklist di atas adalah pemeriksaan rilis yang masih harus dijalankan, bukan bukti bahwa rilis terjadi.

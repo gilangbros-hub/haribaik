@@ -6,6 +6,8 @@
 
 **Status:** ready-for-agent
 
+**Implementation:** Runbook dokumentasi selesai. Status triage tetap `ready-for-agent` karena tracker ini tidak memiliki label selesai; provisioning Supabase/Vercel/GitHub/domain, latihan restore, dan smoke test nyata tetap belum dilakukan.
+
 - [ ] Development, Preview, dan Production memakai konfigurasi terpisah; Preview tidak membaca atau memutasi data produksi.
 - [ ] Rahasia server tidak berada di Git, log, atau bundle browser; data tamu asli tidak berada di repository.
 - [ ] Migrasi diterapkan terkontrol dan ada prosedur rollback yang mempertimbangkan kode, database, serta media.

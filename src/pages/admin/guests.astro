@@ -1,4 +1,5 @@
 ---
+import '../../styles/admin.css';
 import { getGuests, guestAdminDb } from '../../lib/guests/server';
 
 if (!Astro.locals.adminUser) return Astro.redirect('/admin/login');
@@ -20,61 +21,58 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="no-referrer" />
     <title>Daftar tamu — HariBahagia</title>
-    <style>
-      body { margin: 0; padding: 2rem 1rem; color: #17332e; background: #f6f4ed; font: 1rem/1.5 system-ui, sans-serif; }
-      main { max-width: 900px; margin: auto; } h1, h2 { font-family: Georgia, serif; }
-      section, table { margin: 1.5rem 0; width: 100%; } section { padding: 1rem; background: white; border-radius: .75rem; }
-      label { display: inline-block; margin: .4rem .6rem .4rem 0; } input, select, button, a.button { padding: .65rem; font: inherit; }
-      button, a.button { cursor: pointer; } a { color: #245f53; } table { border-collapse: collapse; background: white; }
-      th, td { text-align: left; padding: .6rem; border-bottom: 1px solid #ddd; overflow-wrap: anywhere; }
-      .scroll { overflow-x: auto; } [role="status"] { min-height: 1.5em; }
-      @media (max-width: 600px) { body { padding: 1rem .5rem; } th, td { padding: .45rem; } }
-    </style>
   </head>
   <body>
-    <main>
-      <p><a href="/admin">← Admin</a></p>
-      <h1>Daftar tamu</h1>
-      <p>Tamu aktif: {allGuests.filter(({ active }) => active).length} · Hadir: {attending} · Tidak hadir: {declined} · Belum menjawab: {unanswered}</p>
-      <section aria-labelledby="replace-title">
+    <main class="admin-shell">
+      <a class="admin-breadcrumb" href="/admin">← Admin</a>
+      <div class="admin-topbar"><h1>Daftar tamu</h1></div>
+      <ul class="md-stats">
+        <li class="md-stat"><b>{allGuests.filter(({ active }) => active).length}</b><span>Tamu aktif</span></li>
+        <li class="md-stat"><b>{attending}</b><span>Hadir</span></li>
+        <li class="md-stat"><b>{declined}</b><span>Tidak hadir</span></li>
+        <li class="md-stat"><b>{unanswered}</b><span>Belum menjawab</span></li>
+      </ul>
+      <section class="md-card" aria-labelledby="replace-title">
         <h2 id="replace-title">Ganti daftar dari CSV</h2>
         <p>Kolom wajib: <code>nama,slug</code>. Unduhan CSV dapat diimpor kembali; status RSVP tidak diubah. Batas 1 MB dan 1.000 tamu.</p>
         <form id="guest-import">
-          <label>File CSV <input name="file" type="file" accept=".csv,text/csv" required /></label>
-          <button type="submit">Periksa perubahan</button>
+          <label class="md-field"><span>File CSV</span><input name="file" type="file" accept=".csv,text/csv" required /></label>
+          <div class="md-actions"><button class="md-btn" type="submit">Periksa perubahan</button></div>
         </form>
-        <p id="import-status" role="status" aria-live="polite"></p>
+        <p id="import-status" class="md-status" role="status" aria-live="polite"></p>
         <div id="preview" hidden>
-          <p id="counts"></p>
-          <button id="apply" type="button" disabled>Terapkan penggantian</button>
+          <p id="counts" class="md-card-hint"></p>
+          <div class="md-actions"><button id="apply" class="md-btn" type="button" disabled>Terapkan penggantian</button></div>
         </div>
       </section>
-      <section aria-labelledby="list-title">
+      <section class="md-card" aria-labelledby="list-title">
         <h2 id="list-title">Cari dan bagikan</h2>
         <form method="get">
-          <label>Cari nama atau slug <input name="q" value={Astro.url.searchParams.get('q') ?? ''} /></label>
-          <label>Status
+          <label class="md-field"><span>Cari nama atau slug</span><input name="q" value={Astro.url.searchParams.get('q') ?? ''} /></label>
+          <label class="md-field"><span>Status</span>
             <select name="status">
               <option value="active" selected={status === 'active'}>Aktif</option>
               <option value="inactive" selected={status === 'inactive'}>Nonaktif</option>
               <option value="all" selected={status === 'all'}>Semua</option>
             </select>
           </label>
-          <button type="submit">Terapkan filter</button>
-          <a class="button" href="/api/admin/guests/export">Unduh CSV daftar aktif</a>
+          <div class="md-actions">
+            <button class="md-btn" type="submit">Terapkan filter</button>
+            <a class="md-btn md-btn--outlined" href="/api/admin/guests/export">Unduh CSV daftar aktif</a>
+          </div>
         </form>
-        {!canonicalUrl && <p>Atur PUBLIC_SITE_URL untuk mengaktifkan penyalinan tautan tamu.</p>}
-        <div class="scroll">
-          <table>
+        {!canonicalUrl && <p class="md-alert md-alert--info">Atur PUBLIC_SITE_URL untuk mengaktifkan penyalinan tautan tamu.</p>}
+        <div class="md-table-wrap">
+          <table class="md-table">
             <thead><tr><th>Nama</th><th>Slug</th><th>Status tamu</th><th>RSVP</th><th>Jawaban terakhir</th><th>Tautan</th></tr></thead>
             <tbody>
               {guests.map((guest) => {
                 const rsvp = guest.guest_rsvps;
                 return <tr>
-                  <td>{guest.name}</td><td>{guest.slug}</td><td>{guest.active ? 'Aktif' : 'Nonaktif'}</td>
+                  <td>{guest.name}</td><td>{guest.slug}</td><td><span class={`md-badge ${guest.active ? 'md-badge--yes' : 'md-badge--no'}`}>{guest.active ? 'Aktif' : 'Nonaktif'}</span></td>
                   <td>{rsvp?.status === 'attending' ? 'Hadir' : rsvp?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</td>
                   <td>{rsvp?.answered_at ? new Date(rsvp.answered_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '—'}</td>
-                  <td>{guest.active && canonicalUrl ? <button type="button" data-copy={`${canonicalUrl}/${encodeURIComponent(guest.slug)}`}>Salin URL</button> : '—'}</td>
+                  <td>{guest.active && canonicalUrl ? <button class="md-btn md-btn--text" type="button" data-copy={`${canonicalUrl}/${encodeURIComponent(guest.slug)}`}>Salin URL</button> : '—'}</td>
                 </tr>;
               })}
               {!guests.length && <tr><td colspan="6">Tidak ada tamu yang cocok.</td></tr>}

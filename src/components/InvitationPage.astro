@@ -17,44 +17,69 @@ interface Props {
 const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics', media, guestSlug, rsvpStatus = null } = Astro.props;
 const coupleName = `${invitation.brideName} & ${invitation.groomName}`;
 const firstDate = invitation.events[0] ? formatWeddingDate(invitation.events[0].startsAt, invitation.timeZone) : '';
+const initials = `${invitation.brideName.charAt(0)}${invitation.groomName.charAt(0)}`;
 const profiles = [
   { name: invitation.brideName, role: 'Mempelai wanita' },
   { name: invitation.groomName, role: 'Mempelai pria' },
 ];
 ---
 
+<aside class="desktop-story" aria-label="Pernikahan">
+  <a class="wordmark" href="#cover-title"><span aria-hidden="true">✳</span> HARI BAHAGIA</a>
+  <div class="story-copy">
+    <p class="eyebrow">Dari dua hati, menjadi satu cerita</p>
+    <p class="story-title">Mugia langgeng<br /><em>salawasna.</em></p>
+    <p class="story-translation">Semoga bersama, selamanya.</p>
+    <div class="story-rule"></div>
+    <p class="story-couple">{coupleName}</p>
+    <p class="story-date">{firstDate}</p>
+  </div>
+  <img class="story-landscape" src="/images/priangan-landscape.webp" alt="" width="1536" height="1024" />
+  <p class="story-footnote">SEBUAH JANJI YANG TUMBUH BERSAMA <span aria-hidden="true">✧</span></p>
+</aside>
+
 <main id="invitation" tabindex="-1">
   <section class="cover" aria-labelledby="cover-title">
     <div class="cover-art" aria-hidden="true">
-      <span class="sun"></span><span class="figure figure-one"></span><span class="figure figure-two"></span>
-      <span class="cover-caption">A day to remember</span>
+      <img class="cover-botanical botanical-left" src="/images/jasmine-branch.svg" alt="" width="180" height="360" />
+      <img class="cover-botanical botanical-right" src="/images/jasmine-branch.svg" alt="" width="180" height="360" />
+      <span class="cover-frame"></span>
     </div>
-    {media?.coverImage && <img class="cover-photo" src={media.coverImage} alt={invitation.coverImage?.alt ?? ''} width="440" height="900" fetchpriority="high" />}
+    <div class="cover-topline"><span aria-hidden="true">✧</span><span>WILUJENG SUMPING</span><span aria-hidden="true">✧</span></div>
     <p class="eyebrow">{invitation.title}</p>
-    <h1 id="cover-title">{coupleName}</h1>
+    <div class:list={['cover-portrait', { 'has-photo': media?.coverImage }]}>
+      {media?.coverImage
+        ? <img class="cover-photo" src={media.coverImage} alt={invitation.coverImage?.alt ?? ''} width="440" height="560" fetchpriority="high" />
+        : <><img class="portrait-landscape" src="/images/priangan-landscape.webp" alt="" width="1536" height="1024" fetchpriority="high" /><span class="cover-initials" aria-hidden="true">{initials}</span></>}
+      <span class="portrait-seal" aria-hidden="true">✳</span>
+    </div>
+    <h1 id="cover-title"><span>{invitation.brideName}</span><i>&</i><span>{invitation.groomName}</span></h1>
     {firstDate && <p class="cover-date">{firstDate}</p>}
     <div class="recipient-card">
-      <span>Dear</span>
+      <span>Kepada Bapak/Ibu/Saudara/i</span>
       <strong>{recipient}</strong>
     </div>
     <button class="open-button" type="button" data-open-invitation aria-controls="invitation-body">
-      Buka Undangan <span aria-hidden="true">↓</span>
+      Buka Undangan <span aria-hidden="true">↗</span>
     </button>
     {media?.music && <><button class="music-button" type="button" data-music-toggle aria-pressed="false">Putar musik</button><audio data-invitation-audio src={media.music} preload="none" aria-label="Musik undangan"></audio><p data-audio-status role="status" aria-live="polite"></p></>}
     {preview && <p class="sample-note">Preview draf — hanya terlihat oleh admin</p>}
   </section>
 
-  <div id="invitation-body" class="invitation-body">
+  <div id="invitation-body" class="invitation-body" tabindex="-1">
     <section class="welcome section" aria-labelledby="welcome-title">
+      <span class="section-number" aria-hidden="true">01 / PAMBUKA</span>
+      <img class="welcome-flower" src="/images/jasmine-branch.svg" alt="" width="100" height="200" loading="lazy" />
       <p class="eyebrow">{invitation.greeting}</p>
-      <h2 id="welcome-title">Sebuah hari, sebuah cerita</h2>
+      <h2 id="welcome-title">Bersama, merajut<br /><em>cerita selamanya.</em></h2>
       {invitation.description && <p>{invitation.description}</p>}
       <span class="ornament" aria-hidden="true">✳</span>
     </section>
 
-    <section class="profiles section" aria-labelledby="profiles-title">
-      <p class="eyebrow">Two hearts, one promise</p>
-      <h2 id="profiles-title">Mempelai</h2>
+    <section id="mempelai" class="profiles section" aria-labelledby="profiles-title">
+      <span class="section-number" aria-hidden="true">02 / DUA HATI</span>
+      <p class="eyebrow">Silih asih, silih asah, silih asuh</p>
+      <h2 id="profiles-title">Kami yang <em>berbahagia</em></h2>
       <div class="profile-grid">
           {profiles.map((profile, index) => {
             const image = index === 0 ? media?.brideImage : media?.groomImage;
@@ -71,9 +96,11 @@ const profiles = [
       </div>
     </section>
 
+    <div id="acara" class="events-wrap">
     {invitation.events.map((event, index) => (
       <section class="event section" aria-labelledby={`event-title-${index}`}>
-        <p class="eyebrow">Save the date</p>
+        <span class="section-number" aria-hidden="true">{String(index + 3).padStart(2, '0')} / WAKTU & TEMPAT</span>
+        <p class="eyebrow">Hadir dan menjadi bagian cerita kami</p>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
         <article class="event-card">
           <p class="event-name">{event.name}</p>
@@ -94,20 +121,22 @@ const profiles = [
         </article>
       </section>
     ))}
+    </div>
 
     {media?.gallery.some(Boolean) && (
-      <section class="gallery section" aria-labelledby="gallery-title">
-        <p class="eyebrow">A few favorite moments</p>
-        <h2 id="gallery-title">Galeri</h2>
+      <section id="galeri" class="gallery section" aria-labelledby="gallery-title">
+        <p class="eyebrow">Kepingan cerita kita</p>
+        <h2 id="gallery-title">Yang ingin kami <em>kenang.</em></h2>
         <div class="gallery-grid">
           {media.gallery.map((url, index) => url && invitation.gallery[index] && <img src={url} alt={invitation.gallery[index].alt} width="600" height="600" loading="lazy" decoding="async" />)}
         </div>
       </section>
     )}
 
-    <section class="rsvp section" aria-labelledby="rsvp-title">
-      <p class="eyebrow">With joy</p>
-      <h2 id="rsvp-title">Kehadiran Anda</h2>
+    <section id="kehadiran" class="rsvp section" aria-labelledby="rsvp-title">
+      <span class="ornament" aria-hidden="true">✳</span>
+      <p class="eyebrow">Sebuah kebahagiaan untuk kami</p>
+      <h2 id="rsvp-title">Sampai jumpa<br /><em>di hari bahagia.</em></h2>
       {guestSlug ? <>
         <p>Undangan ini berlaku untuk satu orang.</p>
         <form data-rsvp-form data-endpoint={`/api/guests/${encodeURIComponent(guestSlug)}/rsvp`}>
@@ -125,11 +154,19 @@ const profiles = [
     <footer class="closing section">
       <span class="monogram" aria-hidden="true">{invitation.brideName.charAt(0)} <i>&</i> {invitation.groomName.charAt(0)}</span>
       <p>{invitation.closing}</p>
-      <p class="eyebrow">With love,</p>
+      <p class="eyebrow">Kalayan kanyaah · Dengan cinta</p>
       <h2>{coupleName}</h2>
       {firstDate && <p class="footer-date">{firstDate}</p>}
+      <p class="made-with">HARI BAHAGIA <span aria-hidden="true">✧</span> MUGIA LANGGENG SALAWASNA</p>
     </footer>
   </div>
+  <nav class="invitation-nav" aria-label="Bagian undangan">
+    <a href="#cover-title" aria-label="Sampul"><span aria-hidden="true">⌂</span></a>
+    <a href="#mempelai">Mempelai</a>
+    <a href="#acara">Acara</a>
+    {media?.gallery.some(Boolean) && <a href="#galeri">Galeri</a>}
+    <a href="#kehadiran">RSVP</a>
+  </nav>
 </main>
 
 <script>
@@ -159,10 +196,24 @@ const profiles = [
   document.querySelector('[data-open-invitation]')?.addEventListener('click', () => {
     const body = document.querySelector<HTMLElement>('#invitation-body');
     if (!body) return;
+    document.querySelector('#invitation')?.classList.add('is-open');
     startMusic();
     body.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
-    document.querySelector<HTMLElement>('#invitation')?.focus({ preventScroll: true });
+    body.focus({ preventScroll: true });
   });
+
+  const sections = document.querySelectorAll<HTMLElement>('.invitation-body .section');
+  if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    sections.forEach((section) => { section.classList.add('will-reveal'); observer.observe(section); });
+  }
 </script>
 
 <script>

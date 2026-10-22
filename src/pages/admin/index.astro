@@ -1,4 +1,5 @@
 ---
+import '../../styles/admin.css';
 import { getGuests, guestAdminDb } from '../../lib/guests/server';
 
 const user = Astro.locals.adminUser;
@@ -22,18 +23,36 @@ const unanswered = activeGuests.filter(({ guest_rsvps }) => !guest_rsvps).length
     <title>Admin — HariBahagia</title>
   </head>
   <body>
-    <main>
-      <h1>Pengelolaan undangan</h1>
-      <p>Login sebagai {user.email}</p>
-      <section aria-labelledby="rsvp-summary-title">
-        <h2 id="rsvp-summary-title">Ringkasan RSVP tamu aktif</h2>
-        <p>Total: {activeGuests.length} · Hadir: {attending} · Tidak hadir: {declined} · Belum menjawab: {unanswered}</p>
-        <h3>Tamu nonaktif ({inactiveGuests.length})</h3>
-        {inactiveGuests.length ? <ul>{inactiveGuests.map((guest) => <li>{guest.name} — {guest.guest_rsvps?.status === 'attending' ? 'Hadir' : guest.guest_rsvps?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</li>)}</ul> : <p>Tidak ada tamu nonaktif.</p>}
+    <main class="admin-shell">
+      <div class="admin-topbar">
+        <div>
+          <p class="admin-eyebrow">Login sebagai {user.email}</p>
+          <h1>Pengelolaan undangan</h1>
+        </div>
+        <form method="post" action="/api/admin/logout"><button class="md-btn md-btn--outlined" type="submit">Keluar</button></form>
+      </div>
+
+      <ul class="md-stats">
+        <li class="md-stat"><b>{activeGuests.length}</b><span>Tamu aktif</span></li>
+        <li class="md-stat"><b>{attending}</b><span>Hadir</span></li>
+        <li class="md-stat"><b>{declined}</b><span>Tidak hadir</span></li>
+        <li class="md-stat"><b>{unanswered}</b><span>Belum menjawab</span></li>
+      </ul>
+
+      <section class="md-card" aria-labelledby="rsvp-summary-title">
+        <h2 id="rsvp-summary-title">Tamu nonaktif ({inactiveGuests.length})</h2>
+        {inactiveGuests.length
+          ? <div class="md-table-wrap"><table class="md-table"><thead><tr><th>Nama</th><th>RSVP</th></tr></thead><tbody>{inactiveGuests.map((guest) => <tr><td>{guest.name}</td><td>{guest.guest_rsvps?.status === 'attending' ? 'Hadir' : guest.guest_rsvps?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</td></tr>)}</tbody></table></div>
+          : <p class="md-card-hint">Tidak ada tamu nonaktif.</p>}
       </section>
-      <p><a href="/admin/content">Kelola konten undangan</a></p>
-      <p><a href="/admin/guests">Kelola daftar tamu</a></p>
-      <form method="post" action="/api/admin/logout"><button type="submit">Keluar</button></form>
+
+      <section class="md-card">
+        <h2>Kelola</h2>
+        <div class="md-actions">
+          <a class="md-btn md-btn--tonal" href="/admin/content">Kelola konten undangan</a>
+          <a class="md-btn md-btn--tonal" href="/admin/guests">Kelola daftar tamu</a>
+        </div>
+      </section>
     </main>
   </body>
 </html>

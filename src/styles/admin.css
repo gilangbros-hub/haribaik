@@ -1,0 +1,137 @@
+/* Material Design 3 admin theme, tuned to the Sunda-modern pine/gold/ivory palette. */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  color-scheme: light;
+  /* M3 tonal roles mapped to the invitation identity */
+  --md-primary: #1f5343;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #cfe9dc;
+  --md-on-primary-container: #0a2219;
+  --md-secondary: #9a7945;
+  --md-on-secondary: #ffffff;
+  --md-surface: #fbf9f2;
+  --md-surface-container: #f3efe3;
+  --md-surface-container-high: #ece7d8;
+  --md-on-surface: #1b1c18;
+  --md-on-surface-variant: #45483f;
+  --md-outline: #76796e;
+  --md-outline-variant: #c6c8ba;
+  --md-error: #a4262c;
+  --md-error-container: #f9dedc;
+  --md-on-error-container: #410002;
+  --md-success: #1f5343;
+  --md-shape-sm: 8px;
+  --md-shape-md: 12px;
+  --md-shape-lg: 16px;
+  --md-shape-xl: 28px;
+  --md-elev-1: 0 1px 2px #0000001f, 0 1px 3px 1px #00000014;
+  --md-elev-2: 0 1px 2px #0000004d, 0 2px 6px 2px #00000026;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: var(--md-on-surface);
+  background: var(--md-surface);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100svh; background: var(--md-surface); color: var(--md-on-surface); }
+
+/* ---------- Layout ---------- */
+.admin-shell { max-width: 960px; margin: 0 auto; padding: clamp(16px, 4vw, 40px) clamp(14px, 4vw, 28px) 64px; }
+.admin-topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-bottom: 24px; }
+.admin-topbar h1 { flex: 1; min-width: 200px; margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 600; letter-spacing: -.01em; }
+.admin-eyebrow { margin: 0 0 4px; font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--md-secondary); }
+.admin-breadcrumb { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 20px; font-size: .85rem; color: var(--md-primary); text-decoration: none; font-weight: 500; }
+.admin-breadcrumb:hover { text-decoration: underline; }
+
+/* ---------- Cards ---------- */
+.md-card { background: var(--md-surface-container); border: 1px solid var(--md-outline-variant); border-radius: var(--md-shape-lg); padding: clamp(18px, 3vw, 28px); margin: 0 0 20px; box-shadow: var(--md-elev-1); }
+.md-card h2 { margin: 0 0 4px; font-size: 1.15rem; font-weight: 600; }
+.md-card h3 { margin: 20px 0 8px; font-size: .95rem; font-weight: 600; }
+.md-card > p { color: var(--md-on-surface-variant); line-height: 1.6; }
+.md-card-hint { font-size: .85rem; color: var(--md-on-surface-variant); }
+
+/* ---------- Stat chips ---------- */
+.md-stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 20px; padding: 0; list-style: none; }
+.md-stat { flex: 1; min-width: 120px; padding: 14px 16px; background: var(--md-primary-container); color: var(--md-on-primary-container); border-radius: var(--md-shape-md); }
+.md-stat b { display: block; font-size: 1.6rem; font-weight: 600; line-height: 1.1; }
+.md-stat span { font-size: .78rem; letter-spacing: .02em; }
+
+/* ---------- Text fields (M3 filled) ---------- */
+.md-field { position: relative; display: block; margin: 0 0 18px; }
+.md-field > span { display: block; margin-bottom: 6px; font-size: .82rem; font-weight: 500; color: var(--md-on-surface-variant); }
+.md-field input, .md-field textarea, .md-field select {
+  width: 100%; padding: 12px 14px; font: inherit; color: var(--md-on-surface);
+  background: var(--md-surface-container-high); border: 1px solid var(--md-outline);
+  border-radius: var(--md-shape-sm); transition: border-color .15s, box-shadow .15s;
+}
+.md-field textarea { resize: vertical; min-height: 80px; }
+.md-field input:focus, .md-field textarea:focus, .md-field select:focus {
+  outline: none; border-color: var(--md-primary); box-shadow: 0 0 0 2px #1f534333;
+}
+.md-field input[type='file'] { padding: 10px 12px; cursor: pointer; }
+
+/* ---------- Buttons (M3) ---------- */
+.md-btn, button.md-btn, a.md-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 42px; padding: 0 22px; font: inherit; font-weight: 500; line-height: 1;
+  border: none; border-radius: 20px; cursor: pointer; text-decoration: none;
+  background: var(--md-primary); color: var(--md-on-primary); transition: box-shadow .15s, background .15s, opacity .15s;
+}
+.md-btn:hover { box-shadow: var(--md-elev-1); background: #26614f; }
+.md-btn:active { box-shadow: none; }
+.md-btn:disabled { opacity: .55; cursor: wait; box-shadow: none; }
+.md-btn--tonal { background: var(--md-primary-container); color: var(--md-on-primary-container); }
+.md-btn--tonal:hover { background: #c1e0d2; }
+.md-btn--outlined { background: transparent; color: var(--md-primary); border: 1px solid var(--md-outline); }
+.md-btn--outlined:hover { background: #1f53430f; box-shadow: none; }
+.md-btn--text { background: transparent; color: var(--md-primary); padding: 0 12px; }
+.md-btn--text:hover { background: #1f53430f; box-shadow: none; }
+.md-btn--danger { background: var(--md-error); }
+.md-btn--danger:hover { background: #8d1f24; }
+.md-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }
+
+/* ---------- Status / alerts ---------- */
+.md-status { min-height: 1.4em; margin: 12px 0 0; font-size: .88rem; line-height: 1.5; color: var(--md-on-surface-variant); }
+.md-alert { padding: 12px 16px; border-radius: var(--md-shape-sm); font-size: .88rem; line-height: 1.5; margin: 0 0 16px; }
+.md-alert--error { background: var(--md-error-container); color: var(--md-on-error-container); }
+.md-alert--info { background: var(--md-primary-container); color: var(--md-on-primary-container); }
+
+/* ---------- Table ---------- */
+.md-table-wrap { overflow-x: auto; border-radius: var(--md-shape-md); border: 1px solid var(--md-outline-variant); }
+.md-table { width: 100%; border-collapse: collapse; background: var(--md-surface-container); }
+.md-table th, .md-table td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--md-outline-variant); overflow-wrap: anywhere; font-size: .9rem; }
+.md-table th { font-weight: 600; font-size: .78rem; letter-spacing: .04em; text-transform: uppercase; color: var(--md-on-surface-variant); background: var(--md-surface-container-high); }
+.md-table tr:last-child td { border-bottom: none; }
+.md-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: .74rem; font-weight: 500; background: var(--md-surface-container-high); color: var(--md-on-surface-variant); }
+.md-badge--yes { background: var(--md-primary-container); color: var(--md-on-primary-container); }
+.md-badge--no { background: var(--md-error-container); color: var(--md-on-error-container); }
+
+/* ---------- Grouped fieldsets (content editor) ---------- */
+.admin-shell fieldset { margin: 0 0 16px; padding: 16px 18px; border: 1px solid var(--md-outline-variant); border-radius: var(--md-shape-md); background: var(--md-surface-container-high); }
+.admin-shell legend { padding: 0 8px; font-weight: 600; font-size: .9rem; }
+.admin-shell fieldset label { display: block; margin: 0 0 12px; font-size: .88rem; color: var(--md-on-surface-variant); }
+.admin-shell fieldset label:last-of-type { margin-bottom: 0; }
+.admin-shell fieldset input:not([type='radio']):not([type='checkbox']),
+.admin-shell fieldset textarea, .admin-shell fieldset select {
+  width: 100%; margin-top: 6px; padding: 10px 12px; font: inherit; color: var(--md-on-surface);
+  background: var(--md-surface); border: 1px solid var(--md-outline); border-radius: var(--md-shape-sm);
+}
+.admin-shell fieldset textarea { resize: vertical; }
+.admin-shell fieldset input:focus, .admin-shell fieldset textarea:focus, .admin-shell fieldset select:focus {
+  outline: none; border-color: var(--md-primary); box-shadow: 0 0 0 2px #1f534333;
+}
+.admin-shell fieldset img { display: block; margin: 8px 0; border-radius: var(--md-shape-sm); border: 1px solid var(--md-outline-variant); }
+.admin-shell fieldset audio { display: block; width: 100%; margin: 8px 0; }
+.admin-shell fieldset button { margin: 8px 8px 0 0; }
+
+/* Login centering */
+.admin-auth { display: grid; place-items: center; min-height: 100svh; padding: 24px; }
+.admin-auth .md-card { width: min(100%, 400px); margin: 0; }
+.admin-auth .admin-eyebrow { text-align: center; }
+.admin-auth h1 { margin: 0 0 20px; font-size: 1.5rem; text-align: center; }
+
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--md-secondary); outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

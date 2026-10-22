@@ -1,0 +1,29 @@
+---
+import InvitationPage from '../../components/InvitationPage.astro';
+import { emptyWeddingContent } from '../../lib/content';
+
+// Local visual review must never replace published content or expose admin drafts.
+if (!import.meta.env.DEV) return new Response('Not found', { status: 404 });
+const invitation = {
+  ...emptyWeddingContent,
+  brideName: 'Seheila', groomName: 'Dhana',
+  description: 'Dengan penuh rasa syukur dan bahagia, kami mengundang Bapak/Ibu/Saudara/i untuk menjadi bagian dari awal perjalanan baru kami. Doa dan kehadiran Anda adalah hadiah terindah bagi kami.',
+  events: [
+    { name: 'Akad Nikah', startsAt: '2026-12-12T08:00', endsAt: '2026-12-12T10:00', venue: 'Gedung Pernikahan', address: 'Bandung, Jawa Barat · Lokasi contoh untuk preview desain', mapUrl: 'https://maps.google.com/?q=Bandung' },
+    { name: 'Resepsi', startsAt: '2026-12-12T11:00', endsAt: '2026-12-12T14:00', venue: 'Gedung Pernikahan', address: 'Bandung, Jawa Barat · Lokasi contoh untuk preview desain', mapUrl: 'https://maps.google.com/?q=Bandung' },
+  ],
+  closing: 'Hatur nuhun atas setiap doa, kasih, dan kehadiran yang melengkapi hari bahagia kami.',
+};
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#183e33" />
+    <title>Preview desain Sunda modern — Data contoh</title>
+  </head>
+  <body><InvitationPage invitation={invitation} recipient="Sahabat dan keluarga" /></body>
+</html>

@@ -4,9 +4,9 @@
 
 **Blocked by:** 01 — Undangan publik dasar; 02 — Login dan akses admin; 03 — Edit dan publikasikan konten; 04 — Impor dan pengelolaan daftar tamu CSV; 05 — Foto dan musik undangan; 06 — Undangan personal dari data tersimpan; 07 — RSVP tamu dan ringkasan admin.
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
-**Implementation:** Runbook dokumentasi selesai. Status triage tetap `ready-for-agent` karena tracker ini tidak memiliki label selesai; provisioning Supabase/Vercel/GitHub/domain, latihan restore, dan smoke test nyata tetap belum dilakukan.
+**Implementation:** Runbook dokumentasi selesai. Provisioning Supabase/Vercel/GitHub/domain, latihan restore, dan pemeriksaan rilis hosted tetap menunggu pengelola.
 
 - [ ] Development, Preview, dan Production memakai konfigurasi terpisah; Preview tidak membaca atau memutasi data produksi.
 - [ ] Rahasia server tidak berada di Git, log, atau bundle browser; data tamu asli tidak berada di repository.

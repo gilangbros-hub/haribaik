@@ -1,11 +1,11 @@
 import { createServerClient, parseCookieHeader } from '@supabase/ssr';
 import { defineMiddleware } from 'astro:middleware';
 import { adminAccess } from './lib/admin-access';
+import { withPrivateNoStore } from './lib/admin-response';
 
 const isLoginPage = (pathname: string) => pathname === '/admin/login';
 const isLoginEndpoint = (pathname: string) => pathname === '/api/admin/login';
 const isAdminPath = (pathname: string) => pathname === '/admin' || pathname.startsWith('/admin/') || pathname.startsWith('/api/admin/');
-
 export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.supabase = null;
   context.locals.adminUser = null;
@@ -36,6 +36,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   });
   context.locals.supabase = supabase;
 
+  if (isLoginPage(context.url.pathname) || isLoginEndpoint(context.url.pathname)) {
+    return withPrivateNoStore(await next());
+  }
+
   let user;
   try {
     const { data, error } = await supabase.auth.getUser();
@@ -50,10 +54,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const access = adminAccess(user?.id, import.meta.env.ADMIN_USER_ID);
   if (access === 'allowed') context.locals.adminUser = user;
 
-  if (isLoginPage(context.url.pathname) || isLoginEndpoint(context.url.pathname) || access === 'allowed') {
-    const response = await next();
-    response.headers.set('Cache-Control', 'private, no-store');
-    return response;
+  if (access === 'allowed') {
+    return withPrivateNoStore(await next());
   }
   if (context.url.pathname.startsWith('/api/')) {
     return Response.json({ error: access === 'unconfigured' ? 'Admin auth is not configured.' : 'Admin access required.' }, {

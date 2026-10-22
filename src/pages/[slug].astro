@@ -5,6 +5,7 @@ import { guestAdminDb } from '../lib/guests/server';
 import { readActiveGuest } from '../lib/guests/public';
 import { resolveWeddingMedia } from '../lib/content/media';
 import type { WeddingContent } from '../lib/content';
+import { publicSiteUrl } from '../lib/site-url';
 
 export const prerender = false;
 
@@ -31,9 +32,9 @@ if (validSlug) {
       invitation = await readPublishedWedding(client);
       if (invitation) {
         media = await resolveWeddingMedia(client, invitation);
-        const base = baseUrl ? new URL(baseUrl) : null;
-        if (!base || base.protocol !== 'https:' || base.username || base.password || base.search || base.hash || base.pathname !== '/') {
-          throw new Error('PUBLIC_SITE_URL must be a canonical HTTPS origin.');
+        const base = publicSiteUrl(baseUrl);
+        if (!base) {
+          throw new Error('PUBLIC_SITE_URL must be an HTTPS canonical origin, or a localhost origin for development.');
         }
         recipient = guest.name;
         rsvpStatus = guest.rsvpStatus;

@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readActiveGuest } from '../src/lib/guests/public.ts';
+import { publicSiteUrl } from '../src/lib/site-url.ts';
+
+test('public URLs require HTTPS except on local development origins', () => {
+  assert.equal(publicSiteUrl('https://invite.example.test')?.origin, 'https://invite.example.test');
+  assert.equal(publicSiteUrl('http://localhost:4321')?.origin, 'http://localhost:4321');
+  assert.equal(publicSiteUrl('http://invite.example.test'), null);
+  assert.equal(publicSiteUrl('https://invite.example.test/path'), null);
+});
 
 function guestDb(row) {
   const calls = [];

@@ -4,7 +4,9 @@
 
 **Blocked by:** 01 — Undangan publik dasar.
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
+
+**Implementation:** Login/logout dan pembatasan admin di server sudah diimplementasikan serta diuji lewat browser lokal; akun hosted dan pemeriksaan keamanan pra-rilis masih menunggu provisioning.
 
 - [ ] Admin yang diizinkan dapat login dan logout melalui Supabase Auth; pendaftaran publik tidak tersedia.
 - [ ] Semua halaman dan operasi admin memeriksa sesi di server serta mencocokkan user ID dengan admin yang dikonfigurasi.

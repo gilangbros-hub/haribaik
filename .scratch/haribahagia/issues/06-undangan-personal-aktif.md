@@ -4,7 +4,9 @@
 
 **Blocked by:** 01 — Undangan publik dasar; 03 — Edit dan publikasikan konten; 04 — Impor dan pengelolaan daftar tamu CSV.
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
+
+**Implementation:** Halaman tamu aktif, isolasi data, URL kanonis, dan RSVP sudah diimplementasikan serta diuji secara lokal; variasi slug/media dan environment hosted masih perlu diperiksa.
 
 - [ ] Tautan berbentuk `/<slug>` menampilkan nama tamu aktif pada sampul bersama snapshot publik terkini dan media yang digunakan.
 - [ ] Server mencari tamu dari slug, memeriksa status aktif, dan mengembalikan hanya data yang dibutuhkan untuk undangan.

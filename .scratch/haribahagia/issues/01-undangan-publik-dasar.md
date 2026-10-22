@@ -4,7 +4,9 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
+
+**Implementation:** Renderer, kalender, dan layout responsif sudah dibuat. Pemeriksaan fidelity visual, nama sangat panjang, keyboard, dan reduced motion masih perlu ditinjau.
 
 - [ ] Proyek Astro + TypeScript berjalan di Vercel adapter dan memiliki renderer undangan publik dengan data contoh.
 - [ ] Halaman satu scroll memuat sampul, profil mempelai, detail acara, penutup, tautan peta, unduhan kalender, serta ruang untuk RSVP dan media berikutnya.

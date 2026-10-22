@@ -4,7 +4,9 @@
 
 **Blocked by:** 01 — Undangan publik dasar; 02 — Login dan akses admin.
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
+
+**Implementation:** Draf, preview, validasi, dan Publish snapshot sudah diimplementasikan serta diuji dengan Supabase/browser lokal; pemeriksaan akhir memakai isi pernikahan dan lingkungan hosted masih menunggu.
 
 - [ ] Admin mengedit judul/sapaan, nama mempelai, deskripsi opsional, daftar acara, tanggal/waktu terstruktur, zona waktu, venue, alamat, tautan peta, dan teks penutup melalui form terstruktur.
 - [ ] Simpan hanya memperbarui draf; preview admin menggunakan renderer undangan yang sama dan tidak mengubah data RSVP.

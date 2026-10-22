@@ -29,7 +29,7 @@ const profiles = [
       <span class="sun"></span><span class="figure figure-one"></span><span class="figure figure-two"></span>
       <span class="cover-caption">A day to remember</span>
     </div>
-    {media?.coverImage && <img class="cover-photo" src={media.coverImage} alt={invitation.coverImage?.alt ?? ''} fetchpriority="high" />}
+    {media?.coverImage && <img class="cover-photo" src={media.coverImage} alt={invitation.coverImage?.alt ?? ''} width="440" height="900" fetchpriority="high" />}
     <p class="eyebrow">{invitation.title}</p>
     <h1 id="cover-title">{coupleName}</h1>
     {firstDate && <p class="cover-date">{firstDate}</p>}
@@ -62,7 +62,7 @@ const profiles = [
             return (
           <article class="profile-card">
             <div class:list={['portrait', index === 0 ? 'portrait-one' : 'portrait-two']}>
-              {image ? <img src={image} alt={imageData?.alt ?? ''} loading="lazy" /> : <span role="img" aria-label={`Foto ${profile.role} belum tersedia`}>{profile.name.charAt(0)}</span>}
+              {image ? <img src={image} alt={imageData?.alt ?? ''} width="230" height="265" loading="lazy" /> : <span role="img" aria-label={`Foto ${profile.role} belum tersedia`}>{profile.name.charAt(0)}</span>}
             </div>
             <p class="eyebrow">{profile.role}</p>
             <h3>{profile.name}</h3>
@@ -100,7 +100,7 @@ const profiles = [
         <p class="eyebrow">A few favorite moments</p>
         <h2 id="gallery-title">Galeri</h2>
         <div class="gallery-grid">
-          {media.gallery.map((url, index) => url && invitation.gallery[index] && <img src={url} alt={invitation.gallery[index].alt} loading="lazy" decoding="async" />)}
+          {media.gallery.map((url, index) => url && invitation.gallery[index] && <img src={url} alt={invitation.gallery[index].alt} width="600" height="600" loading="lazy" decoding="async" />)}
         </div>
       </section>
     )}

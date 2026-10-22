@@ -6,6 +6,8 @@
 
 **Status:** ready-for-human
 
+**Implementation:** RSVP tamu dan ringkasan admin sudah diimplementasikan dan diuji secara lokal; race concurrency serta pemeriksaan policy di Supabase hosted masih perlu dilakukan.
+
 - [x] RSVP menyimpan satu jawaban terkini per ID tamu dengan status attending atau declined.
 - [x] Tamu dapat mengirim jawaban pertama, melihat jawaban tersimpan, dan mengubahnya melalui tautan yang sama.
 - [x] Server memeriksa slug, status aktif, dan nilai jawaban; ID sasaran tidak dapat dipilih dari klien.
@@ -18,5 +20,5 @@
 
 ## Comments
 
-- Implemented RSVP save/read, personal form, and admin summary. `npm test`, `npm run check`, and `npm run build` pass. Live Supabase RLS and import/RSVP concurrency checks still require a non-production Supabase project.
+- `npm test` (25/25), Astro check, dan Vercel build lulus. Supabase lokal dengan data sintetis memeriksa migrasi, policy draf admin, penggantian tamu, pembaruan RSVP, dan penolakan tamu nonaktif; alur browser lokal memeriksa login, draf/preview/Publish, RSVP tamu, dan hitungan dashboard. Race concurrency dan policy di Supabase hosted nonproduksi belum diverifikasi.
 - Before public sharing, configure a Vercel Firewall rate-limit rule for `/api/guests/*/rsvp`. Vercel documents WAF rate limiting for Hobby; its fixed-window rule is configured in the project Firewall dashboard, which is not connected yet: https://vercel.com/docs/vercel-firewall/vercel-waf/rate-limiting

@@ -1,5 +1,7 @@
+import { isSameOriginRequest } from '../../../lib/request-origin';
+
 export const POST = async ({ request, locals }: { request: Request; locals: App.Locals }) => {
-  if (request.headers.get('origin') !== new URL(request.url).origin) {
+  if (!isSameOriginRequest(request)) {
     return Response.json({ error: 'Request origin is not allowed.' }, { status: 403 });
   }
   if (locals.supabase) {

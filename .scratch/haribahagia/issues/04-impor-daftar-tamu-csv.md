@@ -6,6 +6,8 @@
 
 **Status:** ready-for-human
 
+**Implementation:** Impor/ekspor dan preservasi identitas/RSVP sudah diimplementasikan; UI impor dan race concurrency masih perlu diverifikasi sebelum rilis.
+
 - [x] Admin dapat mengunggah CSV berkepala `nama` dan `slug`; slug kosong hanya membuat slug untuk tamu baru.
 - [x] Server memvalidasi seluruh file sebelum perubahan dan menunjukkan hitungan tamu baru, tetap aktif, dinonaktifkan, serta diaktifkan kembali.
 - [x] Impor mengganti daftar aktif dalam satu transaksi; kegagalan atau file kosong/rusak tidak mengubah daftar yang tersimpan.
@@ -20,4 +22,4 @@
 ## Comments
 
 - Implementasi menggunakan RPC transaksi yang menserialkan impor dan hanya mengubah tabel tamu; tabel RSVP tidak ditulis oleh jalur impor.
-- `npm test`, `npm run check`, dan `npm run build` lulus. Tes Supabase/browser belum dijalankan karena project Supabase pengujian belum tersedia.
+- `npm test` (25/25), Astro check, dan Vercel build lulus. Supabase lokal dengan data sintetis memeriksa migrasi/RLS, penggantian CSV, dan retensi RSVP; halaman browser serta unduhan CSV juga diperiksa. Impor melalui UI, race concurrency, dan Supabase hosted nonproduksi belum diverifikasi.

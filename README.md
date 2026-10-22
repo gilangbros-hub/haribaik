@@ -18,6 +18,6 @@ insert into public.wedding_admin (user_id) values ('<ADMIN_USER_ID>');
 
 Set `ADMIN_USER_ID` to the same UUID in the server environment. Draft content is private to that configured account. Public clients can read only `wedding_publications`; the Publish RPC copies the exact server-validated draft into that table atomically. No publication row exists until the first successful Publish.
 
-The database migration and RLS policies are committed, but they have not been applied or integration-tested because this project does not yet have a provisioned Supabase project.
+The database migrations and RLS policies were applied to a local Docker Supabase stack and checked with synthetic admin/guest data. A hosted non-production Supabase project and its environment-specific policies still need verification before release. For local Astro, set `PUBLIC_SITE_URL=http://localhost:4321`; non-local environments must use the canonical HTTPS origin.
 
 Apply `supabase/migrations/202610220005_wedding_media.sql` after the wedding content migration. It creates a private Storage bucket and policies for admin uploads and published media reads. Photos are limited to 10 MB and re-encoded as metadata-free WebP; MP3 files are limited to 20 MB. These application limits fit the bucket's 20 MB ceiling, but the project's real Storage quota and upload policies still need checking before release.

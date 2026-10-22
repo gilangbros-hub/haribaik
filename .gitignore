@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.vercel/
+dist/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+Asset Foto/

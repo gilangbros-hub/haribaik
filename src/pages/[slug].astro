@@ -12,6 +12,7 @@ const baseUrl = import.meta.env.PUBLIC_SITE_URL;
 let canonicalUrl: string | null = null;
 let invitation: WeddingContent | null = null;
 let recipient: string | null = null;
+let rsvpStatus: 'attending' | 'declined' | null = null;
 let unavailable = false;
 
 Astro.response.headers.set('Cache-Control', 'private, no-store, max-age=0');
@@ -32,6 +33,7 @@ if (validSlug) {
           throw new Error('PUBLIC_SITE_URL must be a canonical HTTPS origin.');
         }
         recipient = guest.name;
+        rsvpStatus = guest.rsvpStatus;
         canonicalUrl = new URL(encodeURIComponent(slug), base).toString();
       }
     }
@@ -57,7 +59,7 @@ const calendarUrl = canonicalUrl ? new URL('/calendar.ics', canonicalUrl).toStri
   </head>
   <body>
     {invitation && recipient
-      ? <InvitationPage invitation={invitation} recipient={recipient} calendarUrl={calendarUrl} />
+      ? <InvitationPage invitation={invitation} recipient={recipient} calendarUrl={calendarUrl} guestSlug={slug} rsvpStatus={rsvpStatus} />
       : <main class="publication-state"><h1>{unavailable ? 'Undangan belum dapat dimuat' : 'Undangan tidak tersedia'}</h1><p>{unavailable ? 'Silakan coba kembali beberapa saat lagi.' : 'Tautan undangan tidak tersedia.'}</p></main>}
   </body>
 </html>

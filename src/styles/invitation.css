@@ -70,7 +70,15 @@ h1 { max-width: 100%; margin-bottom: 8px; font-size: clamp(3.6rem, 15vw, 5.25rem
 .text-link { padding: 6px 0; color: var(--pink); font-size: .8rem; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .rsvp { padding-block: 65px; background: #172f27; }
 .rsvp > p:not(.eyebrow) { color: var(--muted); font-size: .9rem; line-height: 1.65; }
-.rsvp-placeholder { width: 44px; height: 44px; margin: 24px auto 0; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--pink); font-size: 1.3rem; }
+.rsvp form { max-width: 350px; margin: 25px auto 0; text-align: left; }
+.rsvp fieldset { display: flex; flex-wrap: wrap; gap: 12px 22px; padding: 18px; border: 1px solid var(--line); }
+.rsvp legend { padding-inline: 8px; color: var(--pink); }
+.rsvp label { display: inline-flex; align-items: center; gap: 8px; }
+.rsvp input { accent-color: var(--pink); }
+.rsvp button { width: 100%; margin-top: 15px; padding: 12px 18px; border: 1px solid var(--pink); background: var(--pink); color: #17332e; font: inherit; cursor: pointer; }
+.rsvp button:focus-visible, .rsvp input:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+.rsvp button:disabled { cursor: wait; opacity: .7; }
+.rsvp [role="status"] { min-height: 1.5em; margin-top: 12px; }
 .closing { padding-top: 72px; padding-bottom: 48px; }
 .monogram { display: block; margin-bottom: 24px; color: var(--pink); font-size: 2rem; }
 .monogram i { font-size: 1rem; }

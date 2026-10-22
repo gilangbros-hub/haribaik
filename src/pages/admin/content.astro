@@ -190,7 +190,7 @@ if (Astro.locals.supabase) {
       preview.alt = '';
       preview.width = 180;
       preview.loading = 'lazy';
-      field.insertBefore(preview, field.querySelector('[data-file]'));
+      field.insertBefore(preview, field.querySelector('[data-file]')!.closest('label'));
     }
     if (kind === 'audio') {
       field.querySelector('audio')?.remove();
@@ -198,7 +198,7 @@ if (Astro.locals.supabase) {
       preview.controls = true;
       preview.preload = 'none';
       preview.src = result.previewUrl;
-      field.insertBefore(preview, field.querySelector('[data-file]'));
+      field.insertBefore(preview, field.querySelector('[data-file]')!.closest('label'));
     }
   };
   form.addEventListener('change', async (event) => {

@@ -1,0 +1,133 @@
+---
+import { getGuests, guestAdminDb } from '../../lib/guests/server';
+
+if (!Astro.locals.adminUser) return Astro.redirect('/admin/login');
+const allGuests = await getGuests(guestAdminDb());
+const query = (Astro.url.searchParams.get('q') ?? '').trim().toLocaleLowerCase('id');
+const status = ['active', 'inactive', 'all'].includes(Astro.url.searchParams.get('status') ?? '') ? Astro.url.searchParams.get('status')! : 'active';
+const guests = allGuests.filter((guest) => (status === 'all' || guest.active === (status === 'active'))
+  && (!query || guest.name.toLocaleLowerCase('id').includes(query) || guest.slug.includes(query)));
+const canonicalUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? '';
+const attending = allGuests.filter(({ active, guest_rsvps }) => active && guest_rsvps?.status === 'attending').length;
+const declined = allGuests.filter(({ active, guest_rsvps }) => active && guest_rsvps?.status === 'declined').length;
+const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !guest_rsvps).length;
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Daftar tamu — HariBahagia</title>
+    <style>
+      body { margin: 0; padding: 2rem 1rem; color: #17332e; background: #f6f4ed; font: 1rem/1.5 system-ui, sans-serif; }
+      main { max-width: 900px; margin: auto; } h1, h2 { font-family: Georgia, serif; }
+      section, table { margin: 1.5rem 0; width: 100%; } section { padding: 1rem; background: white; border-radius: .75rem; }
+      label { display: inline-block; margin: .4rem .6rem .4rem 0; } input, select, button, a.button { padding: .65rem; font: inherit; }
+      button, a.button { cursor: pointer; } a { color: #245f53; } table { border-collapse: collapse; background: white; }
+      th, td { text-align: left; padding: .6rem; border-bottom: 1px solid #ddd; overflow-wrap: anywhere; }
+      .scroll { overflow-x: auto; } [role="status"] { min-height: 1.5em; }
+      @media (max-width: 600px) { body { padding: 1rem .5rem; } th, td { padding: .45rem; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p><a href="/admin">← Admin</a></p>
+      <h1>Daftar tamu</h1>
+      <p>Tamu aktif: {allGuests.filter(({ active }) => active).length} · Hadir: {attending} · Tidak hadir: {declined} · Belum menjawab: {unanswered}</p>
+      <section aria-labelledby="replace-title">
+        <h2 id="replace-title">Ganti daftar dari CSV</h2>
+        <p>Kolom wajib: <code>nama,slug</code>. Unduhan CSV dapat diimpor kembali; status RSVP tidak diubah. Batas 1 MB dan 1.000 tamu.</p>
+        <form id="guest-import">
+          <label>File CSV <input name="file" type="file" accept=".csv,text/csv" required /></label>
+          <button type="submit">Periksa perubahan</button>
+        </form>
+        <p id="import-status" role="status" aria-live="polite"></p>
+        <div id="preview" hidden>
+          <p id="counts"></p>
+          <button id="apply" type="button" disabled>Terapkan penggantian</button>
+        </div>
+      </section>
+      <section aria-labelledby="list-title">
+        <h2 id="list-title">Cari dan bagikan</h2>
+        <form method="get">
+          <label>Cari nama atau slug <input name="q" value={Astro.url.searchParams.get('q') ?? ''} /></label>
+          <label>Status
+            <select name="status">
+              <option value="active" selected={status === 'active'}>Aktif</option>
+              <option value="inactive" selected={status === 'inactive'}>Nonaktif</option>
+              <option value="all" selected={status === 'all'}>Semua</option>
+            </select>
+          </label>
+          <button type="submit">Terapkan filter</button>
+          <a class="button" href="/api/admin/guests/export">Unduh CSV daftar aktif</a>
+        </form>
+        {!canonicalUrl && <p>Atur PUBLIC_SITE_URL untuk mengaktifkan penyalinan tautan tamu.</p>}
+        <div class="scroll">
+          <table>
+            <thead><tr><th>Nama</th><th>Slug</th><th>Status tamu</th><th>RSVP</th><th>Jawaban terakhir</th><th>Tautan</th></tr></thead>
+            <tbody>
+              {guests.map((guest) => {
+                const rsvp = guest.guest_rsvps;
+                return <tr>
+                  <td>{guest.name}</td><td>{guest.slug}</td><td>{guest.active ? 'Aktif' : 'Nonaktif'}</td>
+                  <td>{rsvp?.status === 'attending' ? 'Hadir' : rsvp?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</td>
+                  <td>{rsvp?.answered_at ? new Date(rsvp.answered_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '—'}</td>
+                  <td>{guest.active && canonicalUrl ? <button type="button" data-copy={`${canonicalUrl}/${encodeURIComponent(guest.slug)}`}>Salin URL</button> : '—'}</td>
+                </tr>;
+              })}
+              {!guests.length && <tr><td colspan="6">Tidak ada tamu yang cocok.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script>
+      const form = document.querySelector<HTMLFormElement>('#guest-import')!;
+      const fileInput = form.querySelector<HTMLInputElement>('input[type=file]')!;
+      const statusText = document.querySelector<HTMLParagraphElement>('#import-status')!;
+      const preview = document.querySelector<HTMLDivElement>('#preview')!;
+      const apply = document.querySelector<HTMLButtonElement>('#apply')!;
+      const countsText = document.querySelector<HTMLParagraphElement>('#counts')!;
+      const errorMessage = (error: unknown) => error instanceof Error ? error.message : 'Daftar tamu gagal diproses.';
+      let canApply = false;
+      fileInput.addEventListener('change', () => {
+        canApply = false; preview.hidden = true; apply.disabled = true;
+        statusText.textContent = 'File berubah. Periksa dampak sebelum menerapkan.';
+      });
+      async function send(endpoint: string) {
+        const file = fileInput.files?.[0];
+        if (!file) throw new Error('Pilih file CSV.');
+        const data = new FormData(); data.set('file', file);
+        const response = await fetch(endpoint, { method: 'POST', body: data, credentials: 'same-origin' });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Daftar tamu gagal diproses.');
+        return result;
+      }
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault(); preview.hidden = true; canApply = false; apply.disabled = true; statusText.textContent = 'Memeriksa CSV…';
+        try {
+          const result = await send('/api/admin/guests/preview');
+          const { new: added, retained, deactivated, reactivated } = result.counts;
+          countsText.textContent = `Baru: ${added} · Tetap aktif: ${retained} · Dinonaktifkan: ${deactivated} · Diaktifkan kembali: ${reactivated}`;
+          preview.hidden = false; canApply = true; apply.disabled = false; statusText.textContent = 'CSV valid. Periksa dampak sebelum menerapkan.';
+        } catch (error) { statusText.textContent = errorMessage(error); }
+      });
+      apply.addEventListener('click', async () => {
+        if (!canApply || !confirm('Ganti seluruh daftar aktif sesuai CSV ini? RSVP yang sudah masuk tetap tersimpan.')) return;
+        apply.disabled = true; statusText.textContent = 'Menerapkan penggantian…';
+        try {
+          const { counts } = await send('/api/admin/guests/apply');
+          statusText.textContent = `Daftar tamu diperbarui. Baru: ${counts.new} · Tetap: ${counts.retained} · Dinonaktifkan: ${counts.deactivated} · Diaktifkan kembali: ${counts.reactivated}.`;
+          setTimeout(() => location.reload(), 1200);
+        }
+        catch (error) { statusText.textContent = errorMessage(error); apply.disabled = false; }
+      });
+      document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(button.dataset.copy ?? ''); button.textContent = 'Tersalin'; }
+        catch { button.textContent = 'Gagal menyalin'; }
+      }));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,39 @@
+---
+import { getGuests, guestAdminDb } from '../../lib/guests/server';
+
+const user = Astro.locals.adminUser;
+if (!user) return Astro.redirect('/admin/login');
+Astro.response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+const guests = await getGuests(guestAdminDb());
+const activeGuests = guests.filter(({ active }) => active);
+const inactiveGuests = guests.filter(({ active }) => !active);
+const attending = activeGuests.filter(({ guest_rsvps }) => guest_rsvps?.status === 'attending').length;
+const declined = activeGuests.filter(({ guest_rsvps }) => guest_rsvps?.status === 'declined').length;
+const unanswered = activeGuests.filter(({ guest_rsvps }) => !guest_rsvps).length;
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Admin — HariBahagia</title>
+  </head>
+  <body>
+    <main>
+      <h1>Pengelolaan undangan</h1>
+      <p>Login sebagai {user.email}</p>
+      <section aria-labelledby="rsvp-summary-title">
+        <h2 id="rsvp-summary-title">Ringkasan RSVP tamu aktif</h2>
+        <p>Total: {activeGuests.length} · Hadir: {attending} · Tidak hadir: {declined} · Belum menjawab: {unanswered}</p>
+        <h3>Tamu nonaktif ({inactiveGuests.length})</h3>
+        {inactiveGuests.length ? <ul>{inactiveGuests.map((guest) => <li>{guest.name} — {guest.guest_rsvps?.status === 'attending' ? 'Hadir' : guest.guest_rsvps?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</li>)}</ul> : <p>Tidak ada tamu nonaktif.</p>}
+      </section>
+      <p><a href="/admin/content">Kelola konten undangan</a></p>
+      <p><a href="/admin/guests">Kelola daftar tamu</a></p>
+      <form method="post" action="/api/admin/logout"><button type="submit">Keluar</button></form>
+    </main>
+  </body>
+</html>

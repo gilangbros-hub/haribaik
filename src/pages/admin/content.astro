@@ -1,0 +1,277 @@
+---
+import { emptyWeddingContent } from '../../lib/content';
+import { readWeddingDraft } from '../../lib/content/store';
+import { resolveWeddingMedia } from '../../lib/content/media';
+
+const user = Astro.locals.adminUser;
+if (!user) return Astro.redirect('/admin/login');
+let content = structuredClone(emptyWeddingContent);
+let loadError = false;
+let mediaUrls = null;
+if (Astro.locals.supabase) {
+  try {
+    content = await readWeddingDraft(Astro.locals.supabase);
+    mediaUrls = await resolveWeddingMedia(Astro.locals.supabase, content);
+  } catch {
+    loadError = true;
+    Astro.response.status = 503;
+  }
+} else loadError = true;
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Konten undangan — Admin HariBahagia</title>
+  </head>
+  <body>
+    <main>
+      <p><a href="/admin">Pengelolaan undangan</a></p>
+      <h1>Konten undangan</h1>
+      <p>Perubahan tersimpan sebagai draf. Tamu hanya melihat konten setelah Anda memilih Publish.</p>
+      {loadError && <p role="alert">Draf tidak dapat dimuat. Periksa koneksi database sebelum menyimpan.</p>}
+      <p><a href="/admin/preview">Preview draf</a></p>
+      <form id="content-form" data-anon-key={import.meta.env.SUPABASE_ANON_KEY}>
+        <label>Judul / sapaan utama<br /><input name="title" maxlength="120" value={content.title} /></label><br />
+        <label>Ucapan pembuka<br /><textarea name="greeting" maxlength="300" rows="2">{content.greeting}</textarea></label><br />
+        <label>Nama CPW<br /><input name="brideName" maxlength="120" value={content.brideName} /></label><br />
+        <label>Nama CPP<br /><input name="groomName" maxlength="120" value={content.groomName} /></label><br />
+        <label>Deskripsi opsional<br /><textarea name="description" maxlength="2000" rows="4">{content.description}</textarea></label><br />
+        <label>Zona waktu (IANA, misalnya Asia/Jakarta)<br /><input name="timeZone" maxlength="80" value={content.timeZone} /></label>
+
+        <h2>Foto undangan</h2>
+        {[
+          { key: 'coverImage', label: 'Foto pasangan di sampul', image: content.coverImage, url: mediaUrls?.coverImage },
+          { key: 'brideImage', label: 'Foto CPW', image: content.brideImage, url: mediaUrls?.brideImage },
+          { key: 'groomImage', label: 'Foto CPP', image: content.groomImage, url: mediaUrls?.groomImage },
+        ].map(({ key, label, image, url }) => (
+          <fieldset data-media-field data-key={key} data-path={image?.path ?? ''} data-preview={url ?? ''}>
+            <legend>{label}</legend>
+            {url && <img data-image-preview src={url} alt="" width="180" loading="lazy" />}
+            <label>Unggah foto JPEG, PNG, atau WebP (maksimal 10 MB)<br /><input data-file type="file" accept="image/jpeg,image/png,image/webp" /></label><br />
+            <label>Teks alternatif<br /><input data-alt maxlength="300" value={image?.alt ?? ''} /></label><br />
+            <button type="button" data-remove-media>Hapus foto dari draf</button>
+          </fieldset>
+        ))}
+        <fieldset>
+          <legend>Galeri foto (maksimal 12)</legend>
+          <div id="gallery">
+            {content.gallery.map((image, index) => (
+              <fieldset data-gallery-item data-path={image.path} data-preview={mediaUrls?.gallery[index] ?? ''}>
+                <legend>Foto galeri {index + 1}</legend>
+                {mediaUrls?.gallery[index] && <img data-image-preview src={mediaUrls.gallery[index]} alt="" width="180" loading="lazy" />}
+                <label>Ganti foto<br /><input data-file type="file" accept="image/jpeg,image/png,image/webp" /></label><br />
+                <label>Teks alternatif<br /><input data-alt maxlength="300" value={image.alt} /></label><br />
+                <button type="button" data-move-up aria-label={`Pindahkan foto galeri ${index + 1} ke atas`}>↑</button>
+                <button type="button" data-move-down aria-label={`Pindahkan foto galeri ${index + 1} ke bawah`}>↓</button>
+                <button type="button" data-remove-gallery>Hapus dari draf</button>
+              </fieldset>
+            ))}
+          </div>
+          <button type="button" id="add-gallery">Tambah foto galeri</button>
+          <template id="gallery-template">
+            <fieldset data-gallery-item data-path="" data-preview="">
+              <legend>Foto galeri baru</legend>
+              <label>Unggah foto<br /><input data-file type="file" accept="image/jpeg,image/png,image/webp" /></label><br />
+              <label>Teks alternatif<br /><input data-alt maxlength="300" /></label><br />
+              <button type="button" data-move-up aria-label="Pindahkan foto galeri ke atas">↑</button>
+              <button type="button" data-move-down aria-label="Pindahkan foto galeri ke bawah">↓</button>
+              <button type="button" data-remove-gallery>Hapus dari draf</button>
+            </fieldset>
+          </template>
+        </fieldset>
+        <fieldset data-media-field data-key="musicPath" data-path={content.musicPath ?? ''} data-preview={mediaUrls?.music ?? ''}>
+          <legend>Musik</legend>
+          {mediaUrls?.music && <audio controls preload="none" src={mediaUrls.music}>Pemutar audio tidak didukung.</audio>}
+          <label>Unggah MP3 (maksimal 20 MB)<br /><input data-file type="file" accept="audio/mpeg,.mp3" /></label><br />
+          <button type="button" data-remove-media>Hapus musik dari draf</button>
+        </fieldset>
+
+        <h2>Acara</h2>
+        <div id="events">
+          {content.events.map((event) => (
+            <fieldset data-event>
+              <legend>Detail acara</legend>
+              <label>Nama acara<br /><input data-key="name" maxlength="120" value={event.name} /></label><br />
+              <label>Mulai<br /><input data-key="startsAt" type="datetime-local" value={event.startsAt} /></label><br />
+              <label>Selesai<br /><input data-key="endsAt" type="datetime-local" value={event.endsAt} /></label><br />
+              <label>Zona waktu sama dengan di atas<br /><span data-timezone-label>{content.timeZone}</span></label><br />
+              <label>Venue<br /><input data-key="venue" maxlength="180" value={event.venue} /></label><br />
+              <label>Alamat<br /><textarea data-key="address" maxlength="500" rows="2">{event.address}</textarea></label><br />
+              <label>Tautan peta (HTTPS)<br /><input data-key="mapUrl" type="url" maxlength="1000" value={event.mapUrl} /></label><br />
+              <button type="button" data-remove-event>Hapus acara</button>
+            </fieldset>
+          ))}
+        </div>
+        <button id="add-event" type="button">Tambah acara</button>
+        <label><br />Teks penutup<br /><textarea name="closing" maxlength="1000" rows="3">{content.closing}</textarea></label>
+        <p id="form-status" role="status" aria-live="polite"></p>
+        <button type="submit">Simpan draf</button>
+        <button id="publish" type="button">Publish</button>
+      </form>
+      <template id="event-template">
+        <fieldset data-event>
+          <legend>Detail acara</legend>
+          <label>Nama acara<br /><input data-key="name" maxlength="120" /></label><br />
+          <label>Mulai<br /><input data-key="startsAt" type="datetime-local" /></label><br />
+          <label>Selesai<br /><input data-key="endsAt" type="datetime-local" /></label><br />
+          <label>Zona waktu sama dengan di atas<br /><span data-timezone-label></span></label><br />
+          <label>Venue<br /><input data-key="venue" maxlength="180" /></label><br />
+          <label>Alamat<br /><textarea data-key="address" maxlength="500" rows="2"></textarea></label><br />
+          <label>Tautan peta (HTTPS)<br /><input data-key="mapUrl" type="url" maxlength="1000" /></label><br />
+          <button type="button" data-remove-event>Hapus acara</button>
+        </fieldset>
+      </template>
+      <form method="post" action="/api/admin/logout"><button type="submit">Keluar</button></form>
+    </main>
+  </body>
+</html>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#content-form')!;
+  const events = document.querySelector<HTMLElement>('#events')!;
+  const status = document.querySelector<HTMLElement>('#form-status')!;
+  const timeZone = form.elements.namedItem('timeZone') as HTMLInputElement;
+  const eventTemplate = document.querySelector<HTMLTemplateElement>('#event-template')!;
+  const gallery = document.querySelector<HTMLElement>('#gallery')!;
+  const galleryTemplate = document.querySelector<HTMLTemplateElement>('#gallery-template')!;
+  const mediaStatus = document.querySelector<HTMLElement>('#form-status')!;
+  const anonKey = form.dataset.anonKey!;
+
+  const contentFromForm = () => Object.fromEntries(new FormData(form).entries()) as Record<string, unknown> & { events?: unknown };
+  const imageFromField = (field: HTMLElement) => field.dataset.path ? { path: field.dataset.path, alt: (field.querySelector<HTMLInputElement>('[data-alt]')?.value ?? '').trim() } : null;
+  const mediaFromForm = () => {
+    const fields = [...form.querySelectorAll<HTMLElement>('[data-media-field]')];
+    return {
+      coverImage: imageFromField(fields.find((field) => field.dataset.key === 'coverImage')!),
+      brideImage: imageFromField(fields.find((field) => field.dataset.key === 'brideImage')!),
+      groomImage: imageFromField(fields.find((field) => field.dataset.key === 'groomImage')!),
+      gallery: [...gallery.querySelectorAll<HTMLElement>('[data-gallery-item]')].filter((item) => item.dataset.path).map((item) => ({ path: item.dataset.path!, alt: item.querySelector<HTMLInputElement>('[data-alt]')!.value.trim() })),
+      musicPath: fields.find((field) => field.dataset.key === 'musicPath')?.dataset.path || null,
+    };
+  };
+  const makeContent = () => {
+    const content = contentFromForm();
+    content.events = [...events.querySelectorAll<HTMLElement>('[data-event]')].map((event) => Object.fromEntries(
+      [...event.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-key]')].map((field) => [field.dataset.key!, field.value]),
+    ));
+    Object.assign(content, mediaFromForm());
+    return content;
+  };
+  const send = async (url: string, method: string, body?: unknown) => {
+    const response = await fetch(url, {
+      method,
+      headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.errors?.join(' ') || result.error || 'Permintaan gagal.');
+    return result;
+  };
+
+  const save = () => send('/api/admin/content', 'PUT', makeContent());
+  const upload = async (field: HTMLElement, file: File) => {
+    const kind = file.type.startsWith('image/') ? 'image' : 'audio';
+    const signed = await send('/api/admin/media/upload-url', 'POST', { kind, contentType: file.type || (kind === 'audio' ? 'audio/mpeg' : ''), size: file.size });
+    const response = await fetch(signed.signedUrl, { method: 'PUT', headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, 'Content-Type': file.type || 'audio/mpeg', 'x-upsert': 'false' }, body: file });
+    if (!response.ok) throw new Error('Upload gagal. Periksa koneksi atau kuota Storage.');
+    const result = await send('/api/admin/media/finalize', 'POST', { path: signed.path, kind });
+    field.dataset.path = result.path;
+    field.dataset.preview = result.previewUrl;
+    const image = field.querySelector<HTMLImageElement>('[data-image-preview]');
+    if (image) image.src = result.previewUrl;
+    else if (kind === 'image') {
+      const preview = document.createElement('img');
+      preview.dataset.imagePreview = '';
+      preview.src = result.previewUrl;
+      preview.alt = '';
+      preview.width = 180;
+      preview.loading = 'lazy';
+      field.insertBefore(preview, field.querySelector('[data-file]'));
+    }
+    if (kind === 'audio') {
+      field.querySelector('audio')?.remove();
+      const preview = document.createElement('audio');
+      preview.controls = true;
+      preview.preload = 'none';
+      preview.src = result.previewUrl;
+      field.insertBefore(preview, field.querySelector('[data-file]'));
+    }
+  };
+  form.addEventListener('change', async (event) => {
+    const input = (event.target as HTMLElement).closest<HTMLInputElement>('[data-file]');
+    const file = input?.files?.[0];
+    if (!input || !file) return;
+    const field = input.closest<HTMLElement>('[data-media-field], [data-gallery-item]');
+    if (!field) return;
+    input.disabled = true;
+    mediaStatus.textContent = 'Mengunggah dan memeriksa media…';
+    try {
+      await upload(field, file);
+      mediaStatus.textContent = 'Media siap di draf. Pilih Simpan draf agar tersimpan.';
+      if (field.matches('[data-gallery-item]')) field.querySelector<HTMLInputElement>('[data-alt]')?.focus();
+    } catch (error) {
+      mediaStatus.textContent = error instanceof Error ? error.message : 'Upload gagal; media sebelumnya tetap dipakai.';
+    } finally {
+      input.disabled = false;
+      input.value = '';
+    }
+  });
+  form.addEventListener('click', (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button');
+    if (!button) return;
+    if (button.id === 'add-gallery') {
+      if (gallery.querySelectorAll('[data-gallery-item]').length >= 12) { mediaStatus.textContent = 'Galeri maksimal berisi 12 foto.'; return; }
+      gallery.append(galleryTemplate.content.cloneNode(true));
+      gallery.querySelector<HTMLElement>('[data-gallery-item]:last-child [data-file]')?.focus();
+      return;
+    }
+    const item = button.closest<HTMLElement>('[data-gallery-item]');
+    if (button.hasAttribute('data-remove-gallery')) item?.remove();
+    if (button.hasAttribute('data-move-up') && item?.previousElementSibling) gallery.insertBefore(item, item.previousElementSibling);
+    if (button.hasAttribute('data-move-down') && item?.nextElementSibling) gallery.insertBefore(item.nextElementSibling, item);
+    const field = button.closest<HTMLElement>('[data-media-field]');
+    if (button.hasAttribute('data-remove-media') && field) {
+      field.dataset.path = '';
+      field.dataset.preview = '';
+      field.querySelector<HTMLInputElement>('[data-alt]')?.value && (field.querySelector<HTMLInputElement>('[data-alt]')!.value = '');
+      field.querySelector('[data-image-preview]')?.remove();
+      field.querySelector('audio')?.remove();
+    }
+  });
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    status.textContent = 'Menyimpan draf…';
+    try {
+      await save();
+      status.textContent = 'Draf tersimpan. Tamu masih melihat publikasi terakhir.';
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'Draf gagal disimpan.';
+    }
+  });
+  document.querySelector<HTMLButtonElement>('#publish')?.addEventListener('click', async () => {
+    status.textContent = 'Memvalidasi dan menerbitkan…';
+    try {
+      await save();
+      await send('/api/admin/content/publish', 'POST');
+      status.textContent = 'Publikasi berhasil diperbarui.';
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'Publikasi gagal; publikasi terakhir tetap aktif.';
+    }
+  });
+  document.querySelector<HTMLButtonElement>('#add-event')?.addEventListener('click', () => {
+    const node = eventTemplate.content.cloneNode(true) as DocumentFragment;
+    const label = node.querySelector<HTMLElement>('[data-timezone-label]');
+    if (label) label.textContent = timeZone.value;
+    events.append(node);
+  });
+  events.addEventListener('click', (event) => {
+    if ((event.target as HTMLElement).closest('[data-remove-event]')) (event.target as HTMLElement).closest('[data-event]')?.remove();
+  });
+  timeZone.addEventListener('input', () => {
+    events.querySelectorAll<HTMLElement>('[data-timezone-label]').forEach((label) => { label.textContent = timeZone.value; });
+  });
+</script>

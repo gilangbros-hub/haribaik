@@ -1,13 +1,22 @@
 ---
-import type { Invitation } from '../data/invitation';
+import type { WeddingContent } from '../lib/content';
+import { formatWeddingDate } from '../lib/content';
 import '../styles/invitation.css';
 
 interface Props {
-  invitation: Invitation;
+  invitation: WeddingContent;
+  recipient?: string;
+  preview?: boolean;
+  calendarUrl?: string;
 }
 
-const { invitation } = Astro.props;
-const calendar = '/calendar.ics';
+const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics' } = Astro.props;
+const coupleName = `${invitation.brideName} & ${invitation.groomName}`;
+const firstDate = invitation.events[0] ? formatWeddingDate(invitation.events[0].startsAt, invitation.timeZone) : '';
+const profiles = [
+  { name: invitation.brideName, role: 'Mempelai wanita' },
+  { name: invitation.groomName, role: 'Mempelai pria' },
+];
 ---
 
 <main id="invitation" tabindex="-1">
@@ -16,24 +25,24 @@ const calendar = '/calendar.ics';
       <span class="sun"></span><span class="figure figure-one"></span><span class="figure figure-two"></span>
       <span class="cover-caption">A day to remember</span>
     </div>
-    <p class="eyebrow">The wedding of</p>
-    <h1 id="cover-title">{invitation.couple.full}</h1>
-    <p class="cover-date">{invitation.dateLabel}</p>
+    <p class="eyebrow">{invitation.title}</p>
+    <h1 id="cover-title">{coupleName}</h1>
+    {firstDate && <p class="cover-date">{firstDate}</p>}
     <div class="recipient-card">
       <span>Dear</span>
-      <strong>{invitation.recipient}</strong>
+      <strong>{recipient}</strong>
     </div>
     <button class="open-button" type="button" data-open-invitation aria-controls="invitation-body">
       Buka Undangan <span aria-hidden="true">↓</span>
     </button>
-    <p class="sample-note">Tampilan contoh — konten dapat diatur oleh admin</p>
+    {preview && <p class="sample-note">Preview draf — hanya terlihat oleh admin</p>}
   </section>
 
   <div id="invitation-body" class="invitation-body">
     <section class="welcome section" aria-labelledby="welcome-title">
-      <p class="eyebrow">Assalamu’alaikum warahmatullahi wabarakatuh</p>
+      <p class="eyebrow">{invitation.greeting}</p>
       <h2 id="welcome-title">Sebuah hari, sebuah cerita</h2>
-      <p>{invitation.intro}</p>
+      {invitation.description && <p>{invitation.description}</p>}
       <span class="ornament" aria-hidden="true">✳</span>
     </section>
 
@@ -41,35 +50,41 @@ const calendar = '/calendar.ics';
       <p class="eyebrow">Two hearts, one promise</p>
       <h2 id="profiles-title">Mempelai</h2>
       <div class="profile-grid">
-        {invitation.profiles.map((profile, index) => (
+        {profiles.map((profile, index) => (
           <article class="profile-card">
             <div class:list={['portrait', index === 0 ? 'portrait-one' : 'portrait-two']} role="img" aria-label={`Area foto ${profile.role}`}>
-              <span aria-hidden="true">{index === 0 ? 'N' : 'A'}</span>
+              <span aria-hidden="true">{profile.name.charAt(0)}</span>
             </div>
             <p class="eyebrow">{profile.role}</p>
             <h3>{profile.name}</h3>
-            <p class="family">{profile.family}</p>
           </article>
         ))}
       </div>
     </section>
 
-    <section class="event section" aria-labelledby="event-title">
-      <p class="eyebrow">Save the date</p>
-      <h2 id="event-title">Hari Bahagia</h2>
-      <article class="event-card">
-        <p class="event-name">{invitation.event.name}</p>
-        <p class="event-date">{invitation.dateLabel}</p>
-        <p class="event-time">Pukul 18.30–21.00 WIB</p>
-        <div class="rule"></div>
-        <h3>{invitation.event.venue}</h3>
-        <p>{invitation.event.address}</p>
-        <div class="event-actions">
-          <a class="text-link" href={invitation.event.mapUrl} target="_blank" rel="noreferrer">Petunjuk arah <span aria-hidden="true">↗</span></a>
-          <a class="text-link" href={calendar} download="undangan-nadia-arka.ics">Simpan tanggal <span aria-hidden="true">↓</span></a>
-        </div>
-      </article>
-    </section>
+    {invitation.events.map((event, index) => (
+      <section class="event section" aria-labelledby={`event-title-${index}`}>
+        <p class="eyebrow">Save the date</p>
+        <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
+        <article class="event-card">
+          <p class="event-name">{event.name}</p>
+          <p class="event-date">{event.startsAt && formatWeddingDate(event.startsAt, invitation.timeZone)}</p>
+          <p class="event-time">
+            {event.startsAt && formatWeddingDate(event.startsAt, invitation.timeZone, { hour: '2-digit', minute: '2-digit' })}
+            {event.endsAt && `–${formatWeddingDate(event.endsAt, invitation.timeZone, { hour: '2-digit', minute: '2-digit' })}`}
+            {` ${invitation.timeZone}`}
+          </p>
+          {event.startsAt && event.endsAt && event.startsAt.slice(0, 10) !== event.endsAt.slice(0, 10) && <p class="event-time">Sampai {formatWeddingDate(event.endsAt, invitation.timeZone)}</p>}
+          <div class="rule"></div>
+          <h3>{event.venue}</h3>
+          <p>{event.address}</p>
+          <div class="event-actions">
+            {event.mapUrl && <a class="text-link" href={event.mapUrl} target="_blank" rel="noreferrer">Petunjuk arah <span aria-hidden="true">↗</span></a>}
+            <a class="text-link" href={calendarUrl} download="undangan.ics">Simpan tanggal <span aria-hidden="true">↓</span></a>
+          </div>
+        </article>
+      </section>
+    ))}
 
     <section class="rsvp section" aria-labelledby="rsvp-title">
       <p class="eyebrow">With joy</p>
@@ -79,11 +94,11 @@ const calendar = '/calendar.ics';
     </section>
 
     <footer class="closing section">
-      <span class="monogram" aria-hidden="true">N <i>&</i> A</span>
+      <span class="monogram" aria-hidden="true">{invitation.brideName.charAt(0)} <i>&</i> {invitation.groomName.charAt(0)}</span>
       <p>{invitation.closing}</p>
       <p class="eyebrow">With love,</p>
-      <h2>{invitation.couple.full}</h2>
-      <p class="footer-date">{invitation.dateLabel}</p>
+      <h2>{coupleName}</h2>
+      {firstDate && <p class="footer-date">{firstDate}</p>}
     </footer>
   </div>
 </main>

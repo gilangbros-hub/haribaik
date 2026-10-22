@@ -1,0 +1,32 @@
+---
+import InvitationPage from '../../components/InvitationPage.astro';
+import { readWeddingDraft } from '../../lib/content/store';
+
+const user = Astro.locals.adminUser;
+if (!user) return Astro.redirect('/admin/login');
+let invitation = null;
+let unavailable = !Astro.locals.supabase;
+if (Astro.locals.supabase) {
+  try {
+    invitation = await readWeddingDraft(Astro.locals.supabase);
+  } catch {
+    unavailable = true;
+    Astro.response.status = 503;
+  }
+}
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Preview draf — Admin HariBahagia</title>
+  </head>
+  <body>
+    {invitation
+      ? <InvitationPage invitation={invitation} recipient="Nama tamu contoh" preview calendarUrl="/api/admin/content/calendar.ics" />
+      : <main><h1>{unavailable ? 'Preview tidak tersedia' : 'Draf belum tersedia'}</h1><p>Periksa koneksi database dan simpan draf terlebih dahulu.</p><a href="/admin/content">Kembali ke konten</a></main>}
+  </body>
+</html>

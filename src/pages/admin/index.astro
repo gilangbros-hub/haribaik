@@ -15,6 +15,7 @@ if (!user) return Astro.redirect('/admin/login');
     <main>
       <h1>Pengelolaan undangan</h1>
       <p>Login sebagai {user.email}</p>
+      <p><a href="/admin/content">Kelola konten undangan</a></p>
       <p><a href="/admin/guests">Kelola daftar tamu</a></p>
       <form method="post" action="/api/admin/logout"><button type="submit">Keluar</button></form>
     </main>

@@ -1,3 +1,5 @@
+import { isMediaPath } from './media-validation.ts';
+
 export type WeddingEvent = {
   name: string;
   startsAt: string;
@@ -6,6 +8,8 @@ export type WeddingEvent = {
   address: string;
   mapUrl: string;
 };
+
+export type WeddingImage = { path: string; alt: string };
 
 export type WeddingContent = {
   title: string;
@@ -16,6 +20,11 @@ export type WeddingContent = {
   timeZone: string;
   events: WeddingEvent[];
   closing: string;
+  coverImage: WeddingImage | null;
+  brideImage: WeddingImage | null;
+  groomImage: WeddingImage | null;
+  gallery: WeddingImage[];
+  musicPath: string | null;
 };
 
 type ContentResult = { ok: true; content: WeddingContent } | { ok: false; errors: string[] };
@@ -69,6 +78,29 @@ export function validateWeddingContent(value: unknown, requireComplete = true): 
   const description = text('description', 'Deskripsi', 2000, false);
   const timeZone = text('timeZone', 'Zona waktu', 80);
   const closing = text('closing', 'Teks penutup', 1000);
+  const image = (key: string, label: string): WeddingImage | null => {
+    const item = value[key];
+    if (item === null || item === undefined) return null;
+    if (!isRecord(item) || typeof item.path !== 'string' || !isMediaPath(item.path) || typeof item.alt !== 'string' || !item.alt.trim() || item.alt.length > 300) {
+      errors.push(`${label} tidak valid; foto harus memiliki teks alternatif.`);
+      return null;
+    }
+    return { path: item.path, alt: item.alt.trim() };
+  };
+  const coverImage = image('coverImage', 'Foto sampul');
+  const brideImage = image('brideImage', 'Foto CPW');
+  const groomImage = image('groomImage', 'Foto CPP');
+  const sourceGallery = value.gallery === undefined ? [] : value.gallery;
+  if (!Array.isArray(sourceGallery) || sourceGallery.length > 12) errors.push('Galeri maksimal berisi 12 foto.');
+  const gallery = (Array.isArray(sourceGallery) ? sourceGallery : []).slice(0, 12).map((item, index) => {
+    if (!isRecord(item) || typeof item.path !== 'string' || !isMediaPath(item.path) || typeof item.alt !== 'string' || !item.alt.trim() || item.alt.length > 300) {
+      errors.push(`Foto galeri ${index + 1} tidak valid; foto harus memiliki teks alternatif.`);
+      return { path: '', alt: '' };
+    }
+    return { path: item.path, alt: item.alt.trim() };
+  });
+  const musicPath = value.musicPath === null || value.musicPath === undefined || value.musicPath === '' ? null : value.musicPath;
+  if (musicPath !== null && (typeof musicPath !== 'string' || !isMediaPath(musicPath))) errors.push('Musik tidak valid.');
   try {
     new Intl.DateTimeFormat('en', { timeZone });
   } catch {
@@ -115,7 +147,10 @@ export function validateWeddingContent(value: unknown, requireComplete = true): 
   });
 
   if (errors.length) return { ok: false, errors };
-  return { ok: true, content: { title, greeting, brideName, groomName, description, timeZone, events, closing } };
+  const mediaPaths = [coverImage?.path, brideImage?.path, groomImage?.path, ...gallery.map((item) => item.path), musicPath].filter(Boolean);
+  if (new Set(mediaPaths).size !== mediaPaths.length) errors.push('Objek media tidak boleh dipakai lebih dari satu kali.');
+  if (errors.length) return { ok: false, errors };
+  return { ok: true, content: { title, greeting, brideName, groomName, description, timeZone, events, closing, coverImage, brideImage, groomImage, gallery, musicPath: musicPath as string | null } };
 }
 
 export function formatWeddingDate(value: string, timeZone: string, options: Intl.DateTimeFormatOptions = { dateStyle: 'full' }): string {
@@ -163,4 +198,5 @@ export const emptyWeddingContent: WeddingContent = {
   title: 'Undangan Pernikahan', greeting: 'Assalamu’alaikum warahmatullahi wabarakatuh',
   brideName: '', groomName: '', description: '', timeZone: 'Asia/Jakarta',
   events: [{ name: '', startsAt: '', endsAt: '', venue: '', address: '', mapUrl: '' }], closing: '',
+  coverImage: null, brideImage: null, groomImage: null, gallery: [], musicPath: null,
 };

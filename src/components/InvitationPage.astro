@@ -10,9 +10,11 @@ interface Props {
   preview?: boolean;
   calendarUrl?: string;
   media?: WeddingMediaUrls;
+  guestSlug?: string;
+  rsvpStatus?: 'attending' | 'declined' | null;
 }
 
-const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics', media } = Astro.props;
+const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics', media, guestSlug, rsvpStatus = null } = Astro.props;
 const coupleName = `${invitation.brideName} & ${invitation.groomName}`;
 const firstDate = invitation.events[0] ? formatWeddingDate(invitation.events[0].startsAt, invitation.timeZone) : '';
 const profiles = [
@@ -106,8 +108,18 @@ const profiles = [
     <section class="rsvp section" aria-labelledby="rsvp-title">
       <p class="eyebrow">With joy</p>
       <h2 id="rsvp-title">Kehadiran Anda</h2>
-      <p>Konfirmasi kehadiran akan tersedia di undangan personal.</p>
-      <div class="rsvp-placeholder" aria-hidden="true"><span>♡</span></div>
+      {guestSlug ? <>
+        <p>Undangan ini berlaku untuk satu orang.</p>
+        <form data-rsvp-form data-endpoint={`/api/guests/${encodeURIComponent(guestSlug)}/rsvp`}>
+          <fieldset>
+            <legend>Apakah Anda akan hadir?</legend>
+            <label><input type="radio" name="status" value="attending" checked={rsvpStatus === 'attending'} required /> Hadir</label>
+            <label><input type="radio" name="status" value="declined" checked={rsvpStatus === 'declined'} required /> Tidak hadir</label>
+          </fieldset>
+          <button type="submit">Simpan jawaban</button>
+          <p data-rsvp-status role="status" aria-live="polite">{rsvpStatus === 'attending' ? 'Jawaban tersimpan: hadir.' : rsvpStatus === 'declined' ? 'Jawaban tersimpan: tidak hadir.' : ''}</p>
+        </form>
+      </> : <p>Konfirmasi kehadiran tersedia melalui tautan undangan personal.</p>}
     </section>
 
     <footer class="closing section">
@@ -150,5 +162,36 @@ const profiles = [
     startMusic();
     body.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
     document.querySelector<HTMLElement>('#invitation')?.focus({ preventScroll: true });
+  });
+</script>
+
+<script>
+  document.querySelector<HTMLFormElement>('[data-rsvp-form]')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    const status = form.querySelector<HTMLElement>('[data-rsvp-status]')!;
+    const answer = new FormData(form).get('status');
+    if (answer !== 'attending' && answer !== 'declined') {
+      status.textContent = 'Pilih hadir atau tidak hadir.';
+      return;
+    }
+    button.disabled = true;
+    status.textContent = 'Mengirim jawaban…';
+    try {
+      const response = await fetch(form.dataset.endpoint!, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status: answer }),
+      });
+      const result = await response.json();
+      if (!response.ok || result.saved !== true) throw new Error(result.error || 'Jawaban belum tersimpan.');
+      status.textContent = answer === 'attending' ? 'Jawaban tersimpan: hadir.' : 'Jawaban tersimpan: tidak hadir.';
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'Jawaban belum tersimpan. Periksa koneksi lalu coba lagi.';
+    } finally {
+      button.disabled = false;
+    }
   });
 </script>

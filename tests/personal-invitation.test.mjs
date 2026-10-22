@@ -16,10 +16,10 @@ function guestDb(row) {
 
 test('personal invitation lookup returns only an active guest display name', async () => {
   const { client, calls } = guestDb({ id: 'private-id', name: 'Nadia', active: true, slug: 'nadia', guest_rsvps: { status: 'attending' } });
-  assert.deepEqual(await readActiveGuest(client, 'nadia'), { name: 'Nadia' });
+  assert.deepEqual(await readActiveGuest(client, 'nadia'), { name: 'Nadia', rsvpStatus: 'attending' });
   assert.deepEqual(calls, [
     ['from', 'guests'],
-    ['select', 'name'],
+    ['select', 'name,guest_rsvps(status)'],
     ['eq', 'slug', 'nadia'],
     ['eq', 'active', true],
   ]);

@@ -8,9 +8,9 @@ const status = ['active', 'inactive', 'all'].includes(Astro.url.searchParams.get
 const guests = allGuests.filter((guest) => (status === 'all' || guest.active === (status === 'active'))
   && (!query || guest.name.toLocaleLowerCase('id').includes(query) || guest.slug.includes(query)));
 const canonicalUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? '';
-const attending = allGuests.filter(({ active, guest_rsvps }) => active && guest_rsvps[0]?.status === 'attending').length;
-const declined = allGuests.filter(({ active, guest_rsvps }) => active && guest_rsvps[0]?.status === 'declined').length;
-const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !guest_rsvps.length).length;
+const attending = allGuests.filter(({ active, guest_rsvps }) => active && guest_rsvps?.status === 'attending').length;
+const declined = allGuests.filter(({ active, guest_rsvps }) => active && guest_rsvps?.status === 'declined').length;
+const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !guest_rsvps).length;
 ---
 <!doctype html>
 <html lang="id">
@@ -69,7 +69,7 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
             <thead><tr><th>Nama</th><th>Slug</th><th>Status tamu</th><th>RSVP</th><th>Jawaban terakhir</th><th>Tautan</th></tr></thead>
             <tbody>
               {guests.map((guest) => {
-                const rsvp = guest.guest_rsvps[0];
+                const rsvp = guest.guest_rsvps;
                 return <tr>
                   <td>{guest.name}</td><td>{guest.slug}</td><td>{guest.active ? 'Aktif' : 'Nonaktif'}</td>
                   <td>{rsvp?.status === 'attending' ? 'Hadir' : rsvp?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</td>
@@ -83,19 +83,21 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
         </div>
       </section>
     </main>
-    <script define:vars={{ canonicalUrl }}>
-      const form = document.querySelector('#guest-import');
-      const fileInput = form.querySelector('input[type=file]');
-      const statusText = document.querySelector('#import-status');
-      const preview = document.querySelector('#preview');
-      const apply = document.querySelector('#apply');
+    <script>
+      const form = document.querySelector<HTMLFormElement>('#guest-import')!;
+      const fileInput = form.querySelector<HTMLInputElement>('input[type=file]')!;
+      const statusText = document.querySelector<HTMLParagraphElement>('#import-status')!;
+      const preview = document.querySelector<HTMLDivElement>('#preview')!;
+      const apply = document.querySelector<HTMLButtonElement>('#apply')!;
+      const countsText = document.querySelector<HTMLParagraphElement>('#counts')!;
+      const errorMessage = (error: unknown) => error instanceof Error ? error.message : 'Daftar tamu gagal diproses.';
       let canApply = false;
       fileInput.addEventListener('change', () => {
         canApply = false; preview.hidden = true; apply.disabled = true;
         statusText.textContent = 'File berubah. Periksa dampak sebelum menerapkan.';
       });
-      async function send(endpoint) {
-        const file = form.querySelector('input[type=file]').files[0];
+      async function send(endpoint: string) {
+        const file = fileInput.files?.[0];
         if (!file) throw new Error('Pilih file CSV.');
         const data = new FormData(); data.set('file', file);
         const response = await fetch(endpoint, { method: 'POST', body: data, credentials: 'same-origin' });
@@ -108,9 +110,9 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
         try {
           const result = await send('/api/admin/guests/preview');
           const { new: added, retained, deactivated, reactivated } = result.counts;
-          document.querySelector('#counts').textContent = `Baru: ${added} · Tetap aktif: ${retained} · Dinonaktifkan: ${deactivated} · Diaktifkan kembali: ${reactivated}`;
+          countsText.textContent = `Baru: ${added} · Tetap aktif: ${retained} · Dinonaktifkan: ${deactivated} · Diaktifkan kembali: ${reactivated}`;
           preview.hidden = false; canApply = true; apply.disabled = false; statusText.textContent = 'CSV valid. Periksa dampak sebelum menerapkan.';
-        } catch (error) { statusText.textContent = error.message; }
+        } catch (error) { statusText.textContent = errorMessage(error); }
       });
       apply.addEventListener('click', async () => {
         if (!canApply || !confirm('Ganti seluruh daftar aktif sesuai CSV ini? RSVP yang sudah masuk tetap tersimpan.')) return;
@@ -120,10 +122,10 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
           statusText.textContent = `Daftar tamu diperbarui. Baru: ${counts.new} · Tetap: ${counts.retained} · Dinonaktifkan: ${counts.deactivated} · Diaktifkan kembali: ${counts.reactivated}.`;
           setTimeout(() => location.reload(), 1200);
         }
-        catch (error) { statusText.textContent = error.message; apply.disabled = false; }
+        catch (error) { statusText.textContent = errorMessage(error); apply.disabled = false; }
       });
-      document.querySelectorAll('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(button.dataset.copy); button.textContent = 'Tersalin'; }
+      document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(button.dataset.copy ?? ''); button.textContent = 'Tersalin'; }
         catch { button.textContent = 'Gagal menyalin'; }
       }));
     </script>

@@ -1,0 +1,141 @@
+---
+import { emptyWeddingContent } from '../../lib/content';
+import { readWeddingDraft } from '../../lib/content/store';
+
+const user = Astro.locals.adminUser;
+if (!user) return Astro.redirect('/admin/login');
+let content = structuredClone(emptyWeddingContent);
+let loadError = false;
+if (Astro.locals.supabase) {
+  try {
+    content = await readWeddingDraft(Astro.locals.supabase);
+  } catch {
+    loadError = true;
+    Astro.response.status = 503;
+  }
+} else loadError = true;
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Konten undangan — Admin HariBahagia</title>
+  </head>
+  <body>
+    <main>
+      <p><a href="/admin">Pengelolaan undangan</a></p>
+      <h1>Konten undangan</h1>
+      <p>Perubahan tersimpan sebagai draf. Tamu hanya melihat konten setelah Anda memilih Publish.</p>
+      {loadError && <p role="alert">Draf tidak dapat dimuat. Periksa koneksi database sebelum menyimpan.</p>}
+      <p><a href="/admin/preview">Preview draf</a></p>
+      <form id="content-form">
+        <label>Judul / sapaan utama<br /><input name="title" maxlength="120" value={content.title} /></label><br />
+        <label>Ucapan pembuka<br /><textarea name="greeting" maxlength="300" rows="2">{content.greeting}</textarea></label><br />
+        <label>Nama CPW<br /><input name="brideName" maxlength="120" value={content.brideName} /></label><br />
+        <label>Nama CPP<br /><input name="groomName" maxlength="120" value={content.groomName} /></label><br />
+        <label>Deskripsi opsional<br /><textarea name="description" maxlength="2000" rows="4">{content.description}</textarea></label><br />
+        <label>Zona waktu (IANA, misalnya Asia/Jakarta)<br /><input name="timeZone" maxlength="80" value={content.timeZone} /></label>
+
+        <h2>Acara</h2>
+        <div id="events">
+          {content.events.map((event) => (
+            <fieldset data-event>
+              <legend>Detail acara</legend>
+              <label>Nama acara<br /><input data-key="name" maxlength="120" value={event.name} /></label><br />
+              <label>Mulai<br /><input data-key="startsAt" type="datetime-local" value={event.startsAt} /></label><br />
+              <label>Selesai<br /><input data-key="endsAt" type="datetime-local" value={event.endsAt} /></label><br />
+              <label>Zona waktu sama dengan di atas<br /><span data-timezone-label>{content.timeZone}</span></label><br />
+              <label>Venue<br /><input data-key="venue" maxlength="180" value={event.venue} /></label><br />
+              <label>Alamat<br /><textarea data-key="address" maxlength="500" rows="2">{event.address}</textarea></label><br />
+              <label>Tautan peta (HTTPS)<br /><input data-key="mapUrl" type="url" maxlength="1000" value={event.mapUrl} /></label><br />
+              <button type="button" data-remove-event>Hapus acara</button>
+            </fieldset>
+          ))}
+        </div>
+        <button id="add-event" type="button">Tambah acara</button>
+        <label><br />Teks penutup<br /><textarea name="closing" maxlength="1000" rows="3">{content.closing}</textarea></label>
+        <p id="form-status" role="status" aria-live="polite"></p>
+        <button type="submit">Simpan draf</button>
+        <button id="publish" type="button">Publish</button>
+      </form>
+      <template id="event-template">
+        <fieldset data-event>
+          <legend>Detail acara</legend>
+          <label>Nama acara<br /><input data-key="name" maxlength="120" /></label><br />
+          <label>Mulai<br /><input data-key="startsAt" type="datetime-local" /></label><br />
+          <label>Selesai<br /><input data-key="endsAt" type="datetime-local" /></label><br />
+          <label>Zona waktu sama dengan di atas<br /><span data-timezone-label></span></label><br />
+          <label>Venue<br /><input data-key="venue" maxlength="180" /></label><br />
+          <label>Alamat<br /><textarea data-key="address" maxlength="500" rows="2"></textarea></label><br />
+          <label>Tautan peta (HTTPS)<br /><input data-key="mapUrl" type="url" maxlength="1000" /></label><br />
+          <button type="button" data-remove-event>Hapus acara</button>
+        </fieldset>
+      </template>
+      <form method="post" action="/api/admin/logout"><button type="submit">Keluar</button></form>
+    </main>
+  </body>
+</html>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#content-form')!;
+  const events = document.querySelector<HTMLElement>('#events')!;
+  const status = document.querySelector<HTMLElement>('#form-status')!;
+  const timeZone = form.elements.namedItem('timeZone') as HTMLInputElement;
+  const eventTemplate = document.querySelector<HTMLTemplateElement>('#event-template')!;
+
+  const contentFromForm = () => Object.fromEntries(new FormData(form).entries()) as Record<string, unknown> & { events?: unknown };
+  const makeContent = () => {
+    const content = contentFromForm();
+    content.events = [...events.querySelectorAll<HTMLElement>('[data-event]')].map((event) => Object.fromEntries(
+      [...event.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-key]')].map((field) => [field.dataset.key!, field.value]),
+    ));
+    return content;
+  };
+  const send = async (url: string, method: string, body?: unknown) => {
+    const response = await fetch(url, {
+      method,
+      headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.errors?.join(' ') || result.error || 'Permintaan gagal.');
+    return result;
+  };
+
+  const save = () => send('/api/admin/content', 'PUT', makeContent());
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    status.textContent = 'Menyimpan draf…';
+    try {
+      await save();
+      status.textContent = 'Draf tersimpan. Tamu masih melihat publikasi terakhir.';
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'Draf gagal disimpan.';
+    }
+  });
+  document.querySelector<HTMLButtonElement>('#publish')?.addEventListener('click', async () => {
+    status.textContent = 'Memvalidasi dan menerbitkan…';
+    try {
+      await save();
+      await send('/api/admin/content/publish', 'POST');
+      status.textContent = 'Publikasi berhasil diperbarui.';
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'Publikasi gagal; publikasi terakhir tetap aktif.';
+    }
+  });
+  document.querySelector<HTMLButtonElement>('#add-event')?.addEventListener('click', () => {
+    const node = eventTemplate.content.cloneNode(true) as DocumentFragment;
+    const label = node.querySelector<HTMLElement>('[data-timezone-label]');
+    if (label) label.textContent = timeZone.value;
+    events.append(node);
+  });
+  events.addEventListener('click', (event) => {
+    if ((event.target as HTMLElement).closest('[data-remove-event]')) (event.target as HTMLElement).closest('[data-event]')?.remove();
+  });
+  timeZone.addEventListener('input', () => {
+    events.querySelectorAll<HTMLElement>('[data-timezone-label]').forEach((label) => { label.textContent = timeZone.value; });
+  });
+</script>

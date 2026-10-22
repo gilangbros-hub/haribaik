@@ -1,6 +1,20 @@
 ---
 import InvitationPage from '../components/InvitationPage.astro';
-import { invitation } from '../data/invitation';
+import { publicContentClient, readPublishedWedding } from '../lib/content/store';
+
+const client = publicContentClient();
+let invitation = null;
+let unavailable = !client;
+if (client) {
+  try {
+    invitation = await readPublishedWedding(client);
+  } catch {
+    unavailable = true;
+  }
+}
+if (unavailable) Astro.response.status = 503;
+else if (!invitation) Astro.response.status = 404;
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
 ---
 <!doctype html>
 <html lang="id">
@@ -10,8 +24,12 @@ import { invitation } from '../data/invitation';
     <meta name="theme-color" content="#122b23" />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="no-referrer" />
-    <title>{invitation.couple.full} — Undangan Pernikahan</title>
-    <meta name="description" content={`Undangan pernikahan ${invitation.couple.full}`} />
+    <title>{invitation ? `${invitation.brideName} & ${invitation.groomName} — Undangan Pernikahan` : 'Undangan — HariBahagia'}</title>
+    {invitation && <meta name="description" content={`Undangan pernikahan ${invitation.brideName} dan ${invitation.groomName}`} />}
   </head>
-  <body><InvitationPage invitation={invitation} /></body>
+  <body>
+    {invitation
+      ? <InvitationPage invitation={invitation} />
+      : <main class="publication-state"><h1>{unavailable ? 'Undangan belum dapat dimuat' : 'Undangan belum tersedia'}</h1><p>{unavailable ? 'Silakan coba kembali beberapa saat lagi.' : 'Undangan akan tersedia setelah dipublikasikan.'}</p></main>}
+  </body>
 </html>

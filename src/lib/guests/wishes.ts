@@ -2,20 +2,17 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type GuestWish = { name: string; message: string; createdAt: string };
 
+// Open by request: anything goes. Only an empty message is refused, and long text is cut, never rejected.
 export function parseWish(body: unknown): { name: string; message: string } | null {
-  if (typeof body !== 'object' || body === null) return null;
-  const { name, message } = body as Record<string, unknown>;
-  if (typeof name !== 'string' || typeof message !== 'string') return null;
-  const clean = { name: name.trim(), message: message.trim() };
-  return clean.name.length >= 1 && clean.name.length <= 80 && clean.message.length >= 1 && clean.message.length <= 500 ? clean : null;
+  const { name, message } = (typeof body === 'object' && body !== null ? body : {}) as Record<string, unknown>;
+  const text = (value: unknown) => (value === null || value === undefined ? '' : String(value)).trim();
+  const clean = { name: [...(text(name) || 'Tamu')].slice(0, 80).join(''), message: [...text(message)].slice(0, 2000).join('') };
+  return clean.message ? clean : null;
 }
 
-// Returns true when saved, false when the link is not an active guest, 'limit' when the guest hit the cap.
-export async function saveGuestWish(db: SupabaseClient, slug: string, wish: { name: string; message: string }) {
-  const { data, error } = await db.rpc('save_guest_wish', { p_slug: slug, p_name: wish.name, p_message: wish.message });
-  if (error?.hint === 'wish_limit') return 'limit' as const;
+export async function saveWish(db: SupabaseClient, wish: { name: string; message: string }) {
+  const { error } = await db.rpc('save_public_wish', { p_name: wish.name, p_message: wish.message });
   if (error) throw error;
-  return data === true;
 }
 
 // shortcut: newest 100 only, add paging if a wedding gets more.

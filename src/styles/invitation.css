@@ -158,6 +158,14 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .monogram i { font-size: 1.5rem; }
 .closing .eyebrow { margin: 35px 0 10px; }
 .closing h2 { font-size: 2.8rem; overflow-wrap: anywhere; }
+.closing-card { max-width: 420px; margin: 0 auto; padding: 48px 28px 40px; border: 1px solid var(--line); border-radius: 200px 200px 24px 24px; background: #f7f4ebd9; box-shadow: 0 20px 50px #183e331a; backdrop-filter: blur(2px); }
+.closing-card .eyebrow { margin: 0 0 12px; }
+.closing-message { max-width: 320px; margin: 0 auto; color: var(--muted); font-size: .9rem; line-height: 1.95; white-space: pre-line; }
+.closing-salam { margin: 18px auto 0; color: var(--pine); font: italic 1.15rem/1.5 var(--serif); }
+.closing-card .rule { width: 60px; height: 1px; margin: 30px auto; background: var(--gold); }
+.closing-card h2 { margin: 0 0 14px; font-size: 2.4rem; line-height: 1.1; }
+.closing-card h2 i { display: block; margin: 4px 0; color: var(--gold); font-size: 1.4rem; }
+.closing-family { margin: 0 auto 16px; max-width: 300px; color: var(--muted); font-size: .78rem; line-height: 1.8; }
 .footer-date { color: var(--muted); font-size: .58rem; line-height: 1.8; letter-spacing: .12em; text-transform: uppercase; }
 .made-with { margin: 64px 0 0; color: var(--muted); font-size: .45rem; letter-spacing: .12em; }
 .made-with span { margin: 0 8px; color: var(--gold); }

@@ -31,6 +31,9 @@ const accounts = [
 ].filter((account) => account.number);
 // Blank lines split paragraphs; a block starting with "#" is a subheading. Old content has no storyText.
 const storyBlocks = (invitation.storyText ?? '').split(/\r?\n\s*\r?\n/).map((block) => block.trim()).filter(Boolean);
+// Closing salam mirrors an Islamic opening greeting; other greetings get none.
+const salam = /assalamu/i.test(invitation.greeting) ? 'Wassalamu’alaikum warahmatullahi wabarakatuh' : '';
+const families = [invitation.brideParents, invitation.groomParents].filter(Boolean);
 ---
 
 <aside class="desktop-story" aria-label="Pernikahan">
@@ -205,41 +208,45 @@ const storyBlocks = (invitation.storyText ?? '').split(/\r?\n\s*\r?\n/).map((blo
     <section id="ucapan" class="wishes section" aria-labelledby="wishes-title">
       <p class="eyebrow">Ucapan & doa</p>
       <h2 id="wishes-title">Titip <em>doa terbaikmu</em></h2>
-      {guestSlug ? (
-        <form class="wish-form" data-wish-form data-endpoint={`/api/guests/${encodeURIComponent(guestSlug)}/wishes`}>
-          <label><span>Nama</span><input name="name" maxlength="80" required autocomplete="name" value={recipient} /></label>
-          <label><span>Ucapan</span><textarea name="message" maxlength="500" rows="4" required placeholder="Tulis ucapan dan doa untuk kami…"></textarea></label>
+      {preview ? <p class="wish-note">Formulir ucapan tampil di undangan asli.</p> : (
+        <form class="wish-form" data-wish-form data-endpoint="/api/wishes">
+          <label><span>Nama</span><input name="name" maxlength="80" autocomplete="name" value={recipient === 'Sahabat dan keluarga' ? '' : recipient} placeholder="Nama Anda" /></label>
+          <label><span>Ucapan</span><textarea name="message" maxlength="2000" rows="4" placeholder="Tulis ucapan dan doa untuk kami…"></textarea></label>
           <button type="submit">Kirim ucapan <span aria-hidden="true">→</span></button>
           <p data-wish-status role="status" aria-live="polite"></p>
         </form>
-      ) : <p class="wish-note">Ucapan dapat dikirim melalui tautan undangan personal.</p>}
+      )}
     </section>
 
-    {guestSlug && (
-      <section class="wish-wall section" aria-labelledby="wall-title">
-        <p class="eyebrow"><span data-wish-count>{wishes.length}</span> ucapan</p>
-        <h2 id="wall-title">Untaian <em>doa</em></h2>
-        <ul class="wish-list" data-wish-list>
-          {wishes.map((wish) => (
-            <li class="wish-item">
-              <span class="wish-avatar" aria-hidden="true">{wish.name.charAt(0).toUpperCase()}</span>
-              <div>
-                <p class="wish-name">{wish.name} <time datetime={wish.createdAt}>{wishDate(wish.createdAt)}</time></p>
-                <p class="wish-message">{wish.message}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-        {wishes.length === 0 && <p class="wish-note" data-wish-empty>Jadilah yang pertama mengirim doa.</p>}
-      </section>
-    )}
+    <section class="wish-wall section" aria-labelledby="wall-title">
+      <p class="eyebrow"><span data-wish-count>{wishes.length}</span> ucapan</p>
+      <h2 id="wall-title">Untaian <em>doa</em></h2>
+      <ul class="wish-list" data-wish-list>
+        {wishes.map((wish) => (
+          <li class="wish-item">
+            <span class="wish-avatar" aria-hidden="true">{wish.name.charAt(0).toUpperCase()}</span>
+            <div>
+              <p class="wish-name">{wish.name} <time datetime={wish.createdAt}>{wishDate(wish.createdAt)}</time></p>
+              <p class="wish-message">{wish.message}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {wishes.length === 0 && <p class="wish-note" data-wish-empty>Jadilah yang pertama mengirim doa.</p>}
+    </section>
 
-    <footer class="closing section">
-      <span class="monogram" aria-hidden="true">{invitation.brideName.charAt(0)} <i>&</i> {invitation.groomName.charAt(0)}</span>
-      <p>{invitation.closing}</p>
-      <p class="eyebrow">Kalayan kanyaah · Dengan cinta</p>
-      <h2>{coupleName}</h2>
-      {firstDate && <p class="footer-date">{firstDate}</p>}
+    <footer class="closing section" aria-labelledby="closing-title">
+      <div class="closing-card">
+        <span class="monogram" aria-hidden="true">{invitation.brideName.charAt(0)} <i>&</i> {invitation.groomName.charAt(0)}</span>
+        <p class="eyebrow">Terima kasih</p>
+        <p class="closing-message">{invitation.closing || 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.'}</p>
+        {salam && <p class="closing-salam">{salam}</p>}
+        <div class="rule" aria-hidden="true"></div>
+        <p class="eyebrow">Kami yang berbahagia</p>
+        <h2 id="closing-title">{invitation.coverBrideName || invitation.brideName} <i>&</i> {invitation.coverGroomName || invitation.groomName}</h2>
+        {families.length > 0 && <p class="closing-family">Beserta keluarga besar<br />{families.join(' · ')}</p>}
+        {firstDate && <p class="footer-date">{firstDate}</p>}
+      </div>
       <p class="made-with">HARI BAHAGIA <span aria-hidden="true">✧</span> MUGIA LANGGENG SALAWASNA</p>
     </footer>
   </div>

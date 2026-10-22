@@ -2,15 +2,20 @@
 import InvitationPage from '../components/InvitationPage.astro';
 import { publicContentClient, readPublishedWedding } from '../lib/content/store';
 import { resolveWeddingMedia } from '../lib/content/media';
+import { guestAdminDb } from '../lib/guests/server';
+import { readGuestWishes, type GuestWish } from '../lib/guests/wishes';
 
 const client = publicContentClient();
 let invitation = null;
 let media = null;
+let wishes: GuestWish[] = [];
 let unavailable = !client;
 if (client) {
   try {
     invitation = await readPublishedWedding(client);
     if (invitation) media = await resolveWeddingMedia(client, invitation);
+    // Wishes are extra; a failed read must not hide the invitation.
+    if (invitation) wishes = await Promise.resolve().then(() => readGuestWishes(guestAdminDb())).catch(() => []);
   } catch {
     unavailable = true;
   }
@@ -33,7 +38,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate'
   </head>
   <body>
     {invitation
-      ? <InvitationPage invitation={invitation} media={media ?? undefined} />
+      ? <InvitationPage invitation={invitation} wishes={wishes} media={media ?? undefined} />
       : <main class="publication-state"><h1>{unavailable ? 'Undangan belum dapat dimuat' : 'Undangan belum tersedia'}</h1><p>{unavailable ? 'Silakan coba kembali beberapa saat lagi.' : 'Undangan akan tersedia setelah dipublikasikan.'}</p></main>}
   </body>
 </html>

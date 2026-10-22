@@ -27,40 +27,39 @@ h1, h2, h3 { font-family: var(--serif); font-weight: 400; }
 h2 em { font-weight: 400; }
 main { position: relative; width: min(100%, 540px); margin: 0 auto; background: var(--paper); overflow: clip; }
 .desktop-story { display: none; }
-.cover { min-height: 100svh; position: relative; isolation: isolate; padding: 30px 34px 42px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.cover-art { position: absolute; z-index: -1; inset: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 25%, #fffdf7, transparent 75%), var(--paper); }
-.cover-frame { position: absolute; inset: 16px; border: 1px solid var(--line); border-radius: 180px 180px 3px 3px; }
-.cover-frame::after { content: ''; position: absolute; inset: 5px; border: 1px solid #b5a68230; border-radius: inherit; }
-.cover-botanical { position: absolute; width: 150px; height: 330px; opacity: .55; bottom: 12%; transform-origin: bottom; animation: sway 9s ease-in-out infinite alternate; }
+.cover { min-height: 100svh; position: relative; isolation: isolate; padding: max(260px, 50svh) 34px 42px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; text-align: center; color: var(--paper); background: var(--pine); }
+.cover-visual { position: absolute; z-index: -3; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
+.cover::before { content: ''; position: absolute; z-index: -2; inset: 0; background: linear-gradient(180deg, #0b201b55 0%, transparent 25%, #0b201b08 43%, #0b201bba 70%, #0b201bf5 100%); }
+.cover-art { position: absolute; z-index: -1; inset: 0; overflow: hidden; pointer-events: none; }
+.cover-frame { position: absolute; inset: 16px; border: 1px solid #d6c49066; border-radius: 2px; }
+.cover-frame::after { content: ''; position: absolute; inset: 5px; border: 1px solid #d6c49025; border-radius: inherit; }
+.cover-botanical { position: absolute; width: 150px; height: 330px; opacity: .16; bottom: 0; transform-origin: bottom; animation: sway 9s ease-in-out infinite alternate; }
 .botanical-left { left: -80px; transform: rotate(18deg); }
 .botanical-right { right: -80px; scale: -1 1; animation-delay: -4s; }
-.cover-topline { display: flex; align-items: center; gap: 18px; margin: 0 0 22px; font-size: .54rem; letter-spacing: .27em; color: var(--gold); }
+.cover-topline { position: absolute; top: 36px; display: flex; align-items: center; gap: 18px; margin: 0; font-size: .54rem; letter-spacing: .27em; color: #ebdbb3; }
 .cover-topline > span:first-child, .cover-topline > span:last-child { font-size: 1.1rem; }
 .eyebrow { margin: 0 0 15px; color: var(--gold); font-size: .59rem; font-weight: 500; letter-spacing: .2em; line-height: 1.8; text-transform: uppercase; }
-.cover > .eyebrow { margin-bottom: 18px; }
-.cover-portrait { position: relative; width: 178px; height: 208px; margin: 0 0 24px; border-radius: 100px 100px 3px 3px; border: 1px solid #b3a078; padding: 6px; background: #eeeee1; }
-.cover-portrait::before { content: ''; position: absolute; inset: -7px; border: 1px solid var(--line); border-radius: inherit; }
-.cover-photo, .portrait-landscape { width: 100%; height: 100%; border-radius: 95px 95px 0 0; object-fit: cover; object-position: 50% 40%; }
-.portrait-landscape { object-position: 63% 80%; }
-.cover-initials { position: absolute; inset: 0; display: grid; place-items: center; padding-bottom: 60px; font: italic 3.5rem var(--serif); color: var(--pine); letter-spacing: -.13em; }
-.portrait-seal { position: absolute; bottom: -16px; left: calc(50% - 17px); width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: var(--pine); color: #d6c490; border: 3px solid var(--paper); font-size: 1.2rem; }
+.cover > .eyebrow { position: absolute; top: 75px; margin: 0; max-width: calc(100% - 68px); color: #f7f4eb; text-shadow: 0 1px 8px #0b201b; }
+.cover h1 { text-shadow: 0 2px 20px #0b201b66; font-size: clamp(3.4rem, 13vw, 4.5rem); }
+.cover h1 i { color: #dfc894; }
 h1 { display: flex; flex-direction: column; align-items: center; max-width: 100%; margin: 0; font-size: clamp(3.6rem, 14vw, 5rem); line-height: .86; letter-spacing: -.055em; }
 h1 span { overflow-wrap: anywhere; max-width: 100%; }
 h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400; }
-.cover-date { margin: 24px 0 20px; color: var(--muted); font-size: .58rem; letter-spacing: .15em; text-transform: uppercase; line-height: 1.8; }
-.recipient-card { display: grid; gap: 7px; margin: 0 0 20px; font-size: .62rem; color: var(--muted); }
-.recipient-card strong { color: var(--pine); font-size: .84rem; font-weight: 500; overflow-wrap: anywhere; }
+.cover-date { margin: 20px 0; color: #e4e7db; font-size: .58rem; letter-spacing: .15em; text-transform: uppercase; line-height: 1.8; }
+.recipient-card { display: grid; gap: 7px; margin: 0 0 20px; font-size: .62rem; color: #d4ddcf; }
+.recipient-card strong { color: var(--paper); font-size: .84rem; font-weight: 500; overflow-wrap: anywhere; }
 .open-button { display: inline-flex; align-items: center; justify-content: space-between; gap: 30px; padding: 13px 23px; min-height: 46px; border: 1px solid var(--pine); border-radius: 2px; background: var(--pine); color: var(--paper); cursor: pointer; font-size: .72rem; transition: background .25s, transform .25s; }
-.open-button:hover { background: #2d5949; transform: translateY(-2px); }
+.cover .open-button { background: #f7f4eb; color: var(--pine); border-color: #f7f4eb; }
+.open-button:hover { background: #e4ddc8; transform: translateY(-2px); }
 .open-button span { font-size: 1rem; }
-.cover > :not(.cover-art) { animation: arrive 1.2s both; }
+.cover > :not(.cover-art, .cover-visual) { animation: arrive 1.2s both; }
 .cover > h1 { animation-delay: .15s; }
 .cover > .recipient-card, .cover > .open-button { animation-delay: .3s; }
 .music-button { position: fixed; z-index: 5; right: 18px; bottom: 86px; padding: 11px 15px; border: 1px solid #bbaa7a; border-radius: 30px; background: var(--pine); color: var(--paper); cursor: pointer; font-size: .65rem; box-shadow: 0 4px 24px #183e3320; }
 .music-button[aria-pressed='true'] { border-color: #dfc987; }
 [data-audio-status] { max-width: 280px; margin: 12px 0 0; font-size: .7rem; color: var(--muted); }
 [data-audio-status]:empty { display: none; }
-.sample-note { margin: 18px 0 0; font-size: .64rem; color: var(--muted); }
+.sample-note { margin: 18px 0 0; font-size: .64rem; color: #d4ddcf; }
 .section { position: relative; padding: 80px 36px; text-align: center; }
 .section h2 { margin: 0 0 24px; font-size: clamp(2.7rem, 10vw, 3.5rem); line-height: .98; letter-spacing: -.035em; }
 .section-number { display: block; margin-bottom: 38px; color: var(--gold); font-size: .53rem; letter-spacing: .22em; }
@@ -143,24 +142,21 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
   .story-landscape { position: absolute; z-index: -1; bottom: 0; left: 0; width: 100%; height: 60%; object-fit: cover; object-position: center bottom; mask-image: linear-gradient(transparent, black 30%); }
   .story-footnote { margin: auto 0 0; position: relative; z-index: 1; display: flex; justify-content: space-between; align-items: center; color: #f7f4eb; font-size: .48rem; letter-spacing: .16em; text-shadow: 0 1px 6px #183e33; }
   .story-footnote span { font-size: 1.5rem; }
-  .cover { min-height: 100svh; padding-block: 35px 40px; }
-  .cover-portrait { width: 188px; height: 216px; }
+  .cover { padding-bottom: 40px; }
   h1 { font-size: 5rem; }
   .invitation-nav { left: calc(100% - 250px); }
 }
 @media (max-height: 800px) {
-  .cover { padding-block: 28px 32px; }
+  .cover { padding-top: max(240px, 45svh); padding-bottom: 32px; }
+  .cover h1 { font-size: clamp(3rem, 11vw, 3.8rem); }
   .cover-topline { margin-bottom: 14px; }
-  .cover > .eyebrow { margin-bottom: 15px; }
-  .cover-portrait { width: 150px; height: 174px; margin-bottom: 23px; }
   h1 { font-size: 4rem; }
   .cover-date { margin-block: 18px 16px; }
   .recipient-card { margin-bottom: 16px; }
 }
 @media (max-width: 380px) {
-  .cover { padding: 32px 28px 38px; }
+  .cover { padding-inline: 28px; padding-bottom: 38px; }
   .cover-topline { font-size: .47rem; margin-bottom: 16px; }
-  .cover-portrait { width: 150px; height: 174px; }
   .section { padding-inline: 26px; }
   .invitation-nav a { padding-inline: 10px; }
 }

@@ -17,7 +17,6 @@ interface Props {
 const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics', media, guestSlug, rsvpStatus = null } = Astro.props;
 const coupleName = `${invitation.brideName} & ${invitation.groomName}`;
 const firstDate = invitation.events[0] ? formatWeddingDate(invitation.events[0].startsAt, invitation.timeZone) : '';
-const initials = `${invitation.brideName.charAt(0)}${invitation.groomName.charAt(0)}`;
 const profiles = [
   { name: invitation.brideName, role: 'Mempelai wanita' },
   { name: invitation.groomName, role: 'Mempelai pria' },
@@ -40,6 +39,9 @@ const profiles = [
 
 <main id="invitation" tabindex="-1">
   <section class="cover" aria-labelledby="cover-title">
+    {media?.coverImage
+      ? <img class="cover-visual cover-photo" src={media.coverImage} alt={invitation.coverImage?.alt ?? ''} width="853" height="1280" fetchpriority="high" />
+      : <img class="cover-visual" src="/images/priangan-landscape.webp" alt="" width="1536" height="1024" fetchpriority="high" />}
     <div class="cover-art" aria-hidden="true">
       <img class="cover-botanical botanical-left" src="/images/jasmine-branch.svg" alt="" width="180" height="360" />
       <img class="cover-botanical botanical-right" src="/images/jasmine-branch.svg" alt="" width="180" height="360" />
@@ -47,12 +49,6 @@ const profiles = [
     </div>
     <div class="cover-topline"><span aria-hidden="true">✧</span><span>WILUJENG SUMPING</span><span aria-hidden="true">✧</span></div>
     <p class="eyebrow">{invitation.title}</p>
-    <div class:list={['cover-portrait', { 'has-photo': media?.coverImage }]}>
-      {media?.coverImage
-        ? <img class="cover-photo" src={media.coverImage} alt={invitation.coverImage?.alt ?? ''} width="440" height="560" fetchpriority="high" />
-        : <><img class="portrait-landscape" src="/images/priangan-landscape.webp" alt="" width="1536" height="1024" fetchpriority="high" /><span class="cover-initials" aria-hidden="true">{initials}</span></>}
-      <span class="portrait-seal" aria-hidden="true">✳</span>
-    </div>
     <h1 id="cover-title"><span>{invitation.brideName}</span><i>&</i><span>{invitation.groomName}</span></h1>
     {firstDate && <p class="cover-date">{firstDate}</p>}
     <div class="recipient-card">

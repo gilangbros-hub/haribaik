@@ -2,7 +2,7 @@
 
 The shared invitation component is used by the public homepage, personal guest links, and authenticated admin draft preview. Their data loading, publication rules, RSVP endpoint, calendar download, and music controls remain in place.
 
-Visual reference: https://bahagianyakita.ai.id/ — inspected on 22 October 2026. The redesign retains the vertical invitation flow and dark green identity, adds ivory stationery, aged gold detailing, an arched photo frame, and a fixed scenic introduction on wide screens.
+Visual reference: https://bahagianyakita.ai.id/ — inspected on 22 October 2026. The redesign retains the vertical invitation flow and dark green identity, adds ivory stationery, aged gold detailing, and a fixed scenic introduction on wide screens. The opening cover uses an edge-to-edge, full-height couple photo with a pine gradient concentrated behind the names and controls; the upper photo stays clear.
 
 ## Assets
 
@@ -10,6 +10,7 @@ Visual reference: https://bahagianyakita.ai.id/ — inspected on 22 October 2026
 - `public/images/jasmine-branch.svg`: original vector jasmine branch; subtly animated on the cover.
 - `public/images/cloud-pattern.svg`: original repeating cloud ornament inspired by Cirebon batik, rather than a reproduction of a historical pattern.
 - `public/favicon.svg`: matching pine-and-gold floral mark.
+- `public/images/couple-preview.webp`: existing published cover photo from the reference site, used only by the local design preview. Public/personal invitations continue using their configured uploaded cover photo.
 
 The decorative assets do not depict the couple. Uploaded wedding photos take precedence in the existing media slots. All decorative images have empty alternative text or are CSS backgrounds.
 

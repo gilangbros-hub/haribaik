@@ -48,10 +48,10 @@ const unanswered = activeGuests.filter(({ guest_rsvps }) => !guest_rsvps).length
 
       <section class="md-card">
         <h2>Kelola</h2>
-        <div class="md-actions">
-          <a class="md-btn md-btn--tonal" href="/admin/content">Kelola konten undangan</a>
-          <a class="md-btn md-btn--tonal" href="/admin/guests">Kelola daftar tamu</a>
-        </div>
+        <ul class="admin-nav">
+          <li><a href="/admin/content"><b>Konten undangan</b><span>Draf, foto, musik, publish</span></a></li>
+          <li><a href="/admin/guests"><b>Daftar tamu</b><span>CSV, RSVP, tautan tamu</span></a></li>
+        </ul>
       </section>
     </main>
   </body>

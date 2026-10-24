@@ -15,6 +15,7 @@ const loginFailed = Astro.url.searchParams.has('error');
   <body>
     <main class="admin-auth">
       <section class="md-card">
+        <div class="app-icon" aria-hidden="true">HB</div>
         <p class="admin-eyebrow">HariBahagia</p>
         <h1>Login Admin</h1>
         {setupRequired && <p class="md-alert md-alert--info" role="status">Admin belum dikonfigurasi. Isi SUPABASE_URL, SUPABASE_ANON_KEY, dan ADMIN_USER_ID pada environment server.</p>}

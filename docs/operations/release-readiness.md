@@ -20,6 +20,7 @@ Set these variables separately for local Development, Vercel Preview, and Vercel
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server only)
 - `ADMIN_USER_ID`
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (server only; secret at least 32 characters)
 - `PUBLIC_SITE_URL` (canonical origin for that environment)
 
 Create the one admin account separately in each Supabase Auth project and set its UUID and `wedding_admin` row only in that environment. Never copy Production secrets/data into Preview, commit credentials or guest exports, print credentials to logs, or expose the service-role key to browser code. Apply variable changes with a new deployment; existing Vercel deployments do not receive updated values.

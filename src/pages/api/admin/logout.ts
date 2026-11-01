@@ -1,12 +1,10 @@
 import { isSameOriginRequest } from '../../../lib/request-origin';
+import { ADMIN_COOKIE } from '../../../lib/admin-session';
 
-export const POST = async ({ request, locals }: { request: Request; locals: App.Locals }) => {
+export const POST = async ({ request, cookies }: { request: Request; cookies: import('astro').AstroCookies }) => {
   if (!isSameOriginRequest(request)) {
     return Response.json({ error: 'Request origin is not allowed.' }, { status: 403 });
   }
-  if (locals.supabase) {
-    const { error } = await locals.supabase.auth.signOut();
-    if (error) return Response.json({ error: 'Could not end the admin session.' }, { status: 503 });
-  }
-  return Response.redirect(new URL('/admin/login', request.url), 303);
+  cookies.delete(ADMIN_COOKIE, { path: '/' });
+  return new Response(null, { status: 303, headers: { Location: new URL('/admin/login', request.url).toString() } });
 };

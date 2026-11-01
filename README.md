@@ -4,9 +4,9 @@ See [the release and recovery runbook](docs/operations/release-readiness.md) for
 
 ## Admin authentication setup
 
-Create the single admin account in the Supabase Auth dashboard; the app has no sign-up route. Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and that account's UUID as `ADMIN_USER_ID` in the server environment for each Vercel environment. The service-role key is used only by the server to finalize uploads; never expose it to browser code. Astro reads these values when building, so set them before deploying. Copy `.env.example` for local setup and keep real credentials out of Git.
+The app has its own single-admin login; Supabase Auth is not used to sign in. Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (at least 32 random characters) and `ADMIN_USER_ID` in the server environment for each Vercel environment. `ADMIN_USER_ID` must be the UUID of an existing Supabase Auth user: it owns the draft row and the media folder, nobody logs in with it. Astro reads these values when building, so set them before deploying. Copy `.env.example` for local setup and keep real credentials out of Git.
 
-The admin uses Supabase email/password Auth. `/admin` and `/api/admin/*` require a verified session whose user ID matches `ADMIN_USER_ID`. If the Auth service is unavailable, protected requests fail closed.
+Login sets a signed, HTTP-only cookie valid for 7 days. Changing `ADMIN_PASSWORD` or `ADMIN_SESSION_SECRET` logs every session out. After login, admin requests use the server-only service-role key, so never expose it to browser code. Missing settings fail closed.
 
 ## Wedding content setup
 

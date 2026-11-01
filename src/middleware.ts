@@ -1,6 +1,6 @@
-import { createServerClient, parseCookieHeader } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { defineMiddleware } from 'astro:middleware';
-import { adminAccess } from './lib/admin-access';
+import { ADMIN_COOKIE, sessionConfigured, sessionValid } from './lib/admin-session';
 import { withPrivateNoStore } from './lib/admin-response';
 
 const isLoginPage = (pathname: string) => pathname === '/admin/login';
@@ -12,9 +12,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (!isAdminPath(context.url.pathname)) return next();
 
-  const supabaseUrl = import.meta.env.SUPABASE_URL;
-  const supabaseKey = import.meta.env.SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseKey) {
+  const env = import.meta.env;
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY || !sessionConfigured(env)) {
     if (isLoginPage(context.url.pathname)) return next();
     if (context.url.pathname.startsWith('/api/')) {
       return Response.json({ error: 'Admin auth is not configured.' }, { status: 503 });
@@ -22,45 +21,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect('/admin/login?setup=1');
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll: () => parseCookieHeader(context.request.headers.get('cookie') ?? ''),
-      setAll: (cookies) => cookies.forEach(({ name, value, options }) => context.cookies.set(name, value, {
-        ...options,
-        httpOnly: true,
-        secure: import.meta.env.PROD,
-        sameSite: 'lax',
-        path: '/',
-      })),
-    },
-  });
-  context.locals.supabase = supabase;
-
   if (isLoginPage(context.url.pathname) || isLoginEndpoint(context.url.pathname)) {
     return withPrivateNoStore(await next());
   }
 
-  let user;
-  try {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    user = data.user;
-  } catch {
-    if (context.url.pathname.startsWith('/api/')) {
-      return Response.json({ error: 'Authentication service is unavailable.' }, { status: 503 });
-    }
-    return new Response('Authentication service is unavailable.', { status: 503 });
+  if (!sessionValid(context.cookies.get(ADMIN_COOKIE)?.value, env.ADMIN_SESSION_SECRET + env.ADMIN_PASSWORD)) {
+    if (context.url.pathname.startsWith('/api/')) return Response.json({ error: 'Admin access required.' }, { status: 401 });
+    return context.redirect('/admin/login');
   }
-  const access = adminAccess(user?.id, import.meta.env.ADMIN_USER_ID);
-  if (access === 'allowed') context.locals.adminUser = user;
-
-  if (access === 'allowed') {
-    return withPrivateNoStore(await next());
-  }
-  if (context.url.pathname.startsWith('/api/')) {
-    return Response.json({ error: access === 'unconfigured' ? 'Admin auth is not configured.' : 'Admin access required.' }, {
-      status: access === 'unconfigured' ? 503 : 401,
-    });
-  }
-  return context.redirect('/admin/login');
+  // Our own login replaced Supabase Auth, so admin data goes through the server-only service-role key.
+  context.locals.supabase = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+  context.locals.adminUser = { id: env.ADMIN_USER_ID, email: env.ADMIN_EMAIL };
+  return withPrivateNoStore(await next());
 });

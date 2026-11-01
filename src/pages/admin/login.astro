@@ -18,8 +18,8 @@ const loginFailed = Astro.url.searchParams.has('error');
         <div class="app-icon" aria-hidden="true">HB</div>
         <p class="admin-eyebrow">HariBahagia</p>
         <h1>Login Admin</h1>
-        {setupRequired && <p class="md-alert md-alert--info" role="status">Admin belum dikonfigurasi. Isi SUPABASE_URL, SUPABASE_ANON_KEY, dan ADMIN_USER_ID pada environment server.</p>}
-        {loginFailed && <p class="md-alert md-alert--error" role="alert">Login gagal. Periksa email, kata sandi, dan akses admin.</p>}
+        {setupRequired && <p class="md-alert md-alert--info" role="status">Admin belum dikonfigurasi. Isi SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_USER_ID, ADMIN_EMAIL, ADMIN_PASSWORD, dan ADMIN_SESSION_SECRET (minimal 32 karakter) pada environment server.</p>}
+        {loginFailed && <p class="md-alert md-alert--error" role="alert">Login gagal. Periksa email dan kata sandi.</p>}
         <form method="post" action="/api/admin/login">
           <label class="md-field"><span>Email</span><input name="email" type="email" autocomplete="username" required /></label>
           <label class="md-field"><span>Kata sandi</span><input name="password" type="password" autocomplete="current-password" required /></label>

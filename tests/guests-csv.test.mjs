@@ -15,6 +15,8 @@ test('validates imports, generates unique slugs, and reports replacement impact'
 
 test('rejects malformed CSV, bad headers, blank identities, and duplicate slugs', () => {
   assert.throws(() => parseGuestsCsv('name,slug\nAyu,ayu'), /header/i);
+  assert.throws(() => parseGuestsCsv('nama,status\nAyu,x'), /header/i);
+  assert.deepEqual(parseGuestsCsv('nama\nAyu\n"Rina, Dodi"'), [{ name: 'Ayu', slug: '' }, { name: 'Rina, Dodi', slug: '' }]);
   assert.throws(() => parseGuestsCsv('nama,slug\n"Ayu,ayu'), /CSV/);
   assert.throws(() => parseGuestsCsv('nama,slug\n ,ayu'), /nama/);
   assert.throws(() => parseGuestsCsv('nama,slug\nAyu,ayu\nBudi,ayu'), /duplikat/);

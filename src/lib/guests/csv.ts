@@ -65,8 +65,9 @@ function slugFromName(name: string) {
 export function parseGuestsCsv(input: string): CsvGuest[] {
   const table = recordsFromCsv(input);
   const headers = table.shift()?.map((header) => header.trim().toLowerCase());
-  if (!headers || headers[0] !== 'nama' || headers[1] !== 'slug' || headers.length < 2 || headers.length !== new Set(headers).size) {
-    throw new Error('Header CSV harus dimulai dengan kolom nama,slug yang unik.');
+  // The slug column is optional: a nama-only file gets every slug generated from the name.
+  if (!headers || headers[0] !== 'nama' || (headers.length > 1 && headers[1] !== 'slug') || headers.length !== new Set(headers).size) {
+    throw new Error('Header CSV harus dimulai dengan kolom nama (lalu slug, opsional) yang unik.');
   }
   const isExport = headers.includes('status_rsvp') && headers.includes('waktu_jawaban_terakhir');
   if (!table.length) throw new Error('CSV tidak memiliki baris tamu.');
@@ -74,7 +75,7 @@ export function parseGuestsCsv(input: string): CsvGuest[] {
   return table.map((cells, index) => {
     if (cells.length !== headers.length) throw new Error(`Baris ${index + 2}: jumlah kolom tidak sesuai header.`);
     let name = cells[0]!;
-    const slug = cells[1]!;
+    const slug = cells[1] ?? '';
     if (isExport && name.startsWith("''")) name = name.slice(1);
     else if (isExport && name.startsWith("'")
       && (formulaStart.test(name.slice(1)) || formulaStart.test(name.slice(1).trimStart()))) name = name.slice(1);

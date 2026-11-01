@@ -324,15 +324,6 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 }
 
 
-/* Pieces cut from the peacock garden artwork. Kept still on purpose: they decorate, they carry no information. */
-.welcome-flower { width: 150px; height: 136px; object-fit: cover; mask-image: radial-gradient(closest-side, #000 60%, transparent); mix-blend-mode: multiply; }
-.profiles, .wishes, .guest-guide { overflow: hidden; isolation: isolate; }
-.profiles::before, .profiles::after, .wishes::before, .wishes::after { content: ''; position: absolute; z-index: -1; top: 0; width: 118px; height: 160px; background: url('/images/blossom-left.webp') left top / contain no-repeat; mix-blend-mode: multiply; pointer-events: none; }
-.profiles::before, .wishes::before { left: 0; }
-.profiles::after, .wishes::after { right: 0; background-image: url('/images/blossom-right.webp'); background-position: right top; }
-.guest-guide { padding-bottom: 190px; }
-.guest-guide::after { content: ''; position: absolute; z-index: -1; left: 0; bottom: 0; width: 150px; height: 185px; background: url('/images/peacock-left.webp') left bottom / contain no-repeat; mask-image: linear-gradient(to top right, #000 55%, transparent 88%); mix-blend-mode: multiply; pointer-events: none; }
-
 /* The photograph sits inside the same garden as the rest of the invitation. */
 .cover:has(.cover-photo) {
   justify-content: flex-end;
@@ -377,3 +368,23 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 @media (min-width: 1000px) {
   .story-landscape { opacity: .38; mask-image: linear-gradient(transparent 20%, black 75%); }
 }
+
+/* Each section has its own transparent botanical illustration. */
+.welcome::before, .profiles::before, .story::before, .event::before,
+.gallery::before, .rsvp::before, .gift::before, .wishes::before,
+.wish-wall::before, .guest-guide::before, .closing::before {
+  content: ''; display: block; width: min(100%, 320px); height: 120px;
+  margin: 0 auto 28px; background: center / contain no-repeat; pointer-events: none;
+}
+.welcome::before { background-image: url('/images/ornament-welcome.webp'); }
+.profiles::before { background-image: url('/images/ornament-profiles.webp'); }
+.story::before { background-image: url('/images/ornament-story.webp'); }
+.event::before { background-image: url('/images/ornament-events.webp'); }
+.gallery::before { background-image: url('/images/ornament-gallery.webp'); }
+.rsvp::before { background-image: url('/images/ornament-rsvp.webp'); }
+.gift::before { background-image: url('/images/ornament-gift.webp'); }
+.wishes::before { background-image: url('/images/ornament-wishes.webp'); }
+.wish-wall::before { background-image: url('/images/ornament-wall.webp'); }
+.guest-guide::before { background-image: url('/images/ornament-guide.webp'); }
+.closing::before { background-image: url('/images/ornament-closing.webp'); height: 150px; }
+.closing { background: #fbf6eb; }

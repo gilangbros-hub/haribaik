@@ -1,7 +1,8 @@
 ---
 import type { WeddingContent } from '../lib/content';
 import Icon from './Icon.astro';
-import { formatWeddingDate, lineage } from '../lib/content';
+import RichTitle from './RichTitle.astro';
+import { formatWeddingDate, lineage, sectionCopy, sectionKeys, type SectionCopy, type SectionKey } from '../lib/content';
 import type { WeddingMediaUrls } from '../lib/content/media';
 import type { GuestWish } from '../lib/guests/wishes';
 import '../styles/invitation.css';
@@ -35,6 +36,9 @@ const storyBlocks = (invitation.storyText ?? '').split(/\r?\n\s*\r?\n/).map((blo
 // Closing salam mirrors an Islamic opening greeting; other greetings get none.
 const salam = /assalamu/i.test(invitation.greeting) ? 'Wassalamu’alaikum warahmatullahi wabarakatuh' : '';
 const families = [invitation.brideParents, invitation.groomParents].filter(Boolean);
+const copy = Object.fromEntries(sectionKeys.map((key) => [key, sectionCopy(invitation, key)])) as Record<SectionKey, SectionCopy>;
+const showGallery = copy.gallery.enabled && media?.gallery.some(Boolean);
+const showRsvp = copy.rsvp.enabled && guestSlug;
 ---
 
 <aside class="desktop-story" aria-label="Pernikahan">
@@ -78,20 +82,23 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
 
   <noscript><style>#invitation-body[hidden] { display: block !important; } html:has(#invitation-body[hidden]) { overflow: auto; } [data-open-invitation] { display: none; }</style><p class="no-script-note">Silakan gulir untuk membaca undangan. Aktifkan JavaScript untuk mengirim ucapan.</p></noscript>
   <div id="invitation-body" class="invitation-body" tabindex="-1" hidden>
+    {copy.welcome.enabled && (
     <section class="welcome section" aria-labelledby="welcome-title">
       <span class="section-number" aria-hidden="true">01 / PAMBUKA</span>
       <img class="welcome-flower" src="/images/jasmine-branch.svg" alt="" width="100" height="200" loading="lazy" />
       <p class="eyebrow">{invitation.greeting}</p>
-      <h2 id="welcome-title">Dengan penuh syukur,<br /><em>kami mengundang Anda</em></h2>
-      <p>Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami.</p>
+      <h2 id="welcome-title"><RichTitle text={copy.welcome.title} /></h2>
+      <p>{copy.welcome.text}</p>
       {invitation.description && <p>{invitation.description}</p>}
       <span class="ornament"><Icon name="flower" /></span>
     </section>
+    )}
 
+    {copy.profiles.enabled && (
     <section id="mempelai" class="profiles section" aria-labelledby="profiles-title">
       <span class="section-number" aria-hidden="true">02 / MEMPELAI</span>
-      <p class="eyebrow">Silih asih, silih asah, silih asuh</p>
-      <h2 id="profiles-title">Kedua <em>mempelai</em></h2>
+      <p class="eyebrow">{copy.profiles.eyebrow}</p>
+      <h2 id="profiles-title"><RichTitle text={copy.profiles.title} /></h2>
       <div class="profile-grid">
           {profiles.map((profile, index) => {
             const image = index === 0 ? media?.brideImage : media?.groomImage;
@@ -108,11 +115,12 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
           );})}
       </div>
     </section>
+    )}
 
-    {(storyBlocks.length > 0 || media?.storyImage) && (
+    {copy.story.enabled && (storyBlocks.length > 0 || media?.storyImage) && (
       <section id="cerita" class="story section" aria-labelledby="story-title" style={media?.storyImage ? `--story-bg: url("${media.storyImage}")` : undefined}>
-        <p class="eyebrow">Kisah perjalanan</p>
-        <h2 id="story-title">Cerita <em>Kami</em></h2>
+        <p class="eyebrow">{copy.story.eyebrow}</p>
+        <h2 id="story-title"><RichTitle text={copy.story.title} /></h2>
         <div class="story-body">
           <div class="story-text">
             {storyBlocks.map((block) => block.startsWith('#')
@@ -128,11 +136,12 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
       </section>
     )}
 
+    {copy.events.enabled && (
     <div id="acara" class="events-wrap">
     {invitation.events.map((event, index) => (
       <section class="event section" aria-labelledby={`event-title-${index}`}>
         <span class="section-number" aria-hidden="true">{String(index + 3).padStart(2, '0')} / WAKTU & TEMPAT</span>
-        <p class="eyebrow">Waktu & tempat</p>
+        <p class="eyebrow">{copy.events.eyebrow}</p>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
         <article class="event-card">
           <span class="event-symbol"><Icon name="calendar" /></span>
@@ -161,24 +170,25 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
       </section>
     ))}
     </div>
+    )}
 
-    {media?.gallery.some(Boolean) && (
+    {showGallery && media && (
       <section id="galeri" class="gallery section" aria-labelledby="gallery-title">
-        <p class="eyebrow">Album foto</p>
-        <h2 id="gallery-title">Galeri <em>foto</em></h2>
+        <p class="eyebrow">{copy.gallery.eyebrow}</p>
+        <h2 id="gallery-title"><RichTitle text={copy.gallery.title} /></h2>
         <div class="gallery-grid">
           {media.gallery.map((url, index) => url && invitation.gallery[index] && <img src={url} alt={invitation.gallery[index].alt} width="600" height="600" loading="lazy" decoding="async" />)}
         </div>
       </section>
     )}
 
-    {guestSlug && (
+    {showRsvp && guestSlug && (
     <section id="kehadiran" class="rsvp section" aria-labelledby="rsvp-title">
       <span class="ornament"><Icon name="heart" /></span>
-      <p class="eyebrow">RSVP</p>
-      <h2 id="rsvp-title">Konfirmasi <em>kehadiran</em></h2>
+      <p class="eyebrow">{copy.rsvp.eyebrow}</p>
+      <h2 id="rsvp-title"><RichTitle text={copy.rsvp.title} /></h2>
       <>
-        <p>Mohon kesediaan Anda untuk mengonfirmasi kehadiran. Undangan ini berlaku untuk satu orang.</p>
+        <p>{copy.rsvp.text}</p>
         <form data-rsvp-form data-endpoint={`/api/guests/${encodeURIComponent(guestSlug)}/rsvp`}>
           <fieldset>
             <legend>Apakah Anda akan hadir?</legend>
@@ -192,12 +202,12 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
     </section>
     )}
 
-    {accounts.length > 0 && (
+    {copy.gift.enabled && accounts.length > 0 && (
       <section id="hadiah" class="gift section" aria-labelledby="gift-title">
         <span class="section-icon"><Icon name="gift" /></span>
-        <p class="eyebrow">Amplop digital</p>
-        <h2 id="gift-title">Tanda <em>kasih</em></h2>
-        <p class="gift-hint">Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Bagi yang ingin memberikan tanda kasih, dapat melalui rekening berikut.</p>
+        <p class="eyebrow">{copy.gift.eyebrow}</p>
+        <h2 id="gift-title"><RichTitle text={copy.gift.title} /></h2>
+        <p class="gift-hint">{copy.gift.text}</p>
         <div class="gift-list">
           {accounts.map((account) => (
             <article class="gift-card">
@@ -212,11 +222,12 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
       </section>
     )}
 
+    {copy.wishes.enabled && (<>
     <section id="ucapan" class="wishes section" aria-labelledby="wishes-title">
       <span class="section-icon"><Icon name="message" /></span>
-      <p class="eyebrow">Ucapan & doa</p>
-      <h2 id="wishes-title">Kirim <em>doa restu</em></h2>
-      <p class="section-intro">Sampaikan ucapan dan doa restu untuk kedua mempelai, termasuk bila berhalangan hadir. Ucapan akan ditampilkan di undangan ini.</p>
+      <p class="eyebrow">{copy.wishes.eyebrow}</p>
+      <h2 id="wishes-title"><RichTitle text={copy.wishes.title} /></h2>
+      <p class="section-intro">{copy.wishes.text}</p>
       {preview ? <p class="wish-note">Formulir ucapan tampil di undangan asli.</p> : (
         <form class="wish-form" data-wish-form data-endpoint="/api/wishes">
           <label><span>Nama (opsional)</span><input name="name" maxlength="80" autocomplete="name" value={recipient === 'Sahabat dan keluarga' ? '' : recipient} placeholder="Nama Anda" /></label>
@@ -243,27 +254,31 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
       </ul>
       {wishes.length === 0 && <p class="wish-note" data-wish-empty>Belum ada ucapan. Jadilah yang pertama mengirimkan doa restu.</p>}
     </section>
+    </>)}
 
+    {copy.guide.enabled && (
     <section id="panduan" class="guest-guide section" aria-labelledby="guide-title">
-      <p class="eyebrow">Panduan tamu</p>
-      <h2 id="guide-title">Informasi <em>tamu</em></h2>
-      <p class="section-intro">Beberapa informasi untuk membantu persiapan kehadiran Anda.</p>
+      <p class="eyebrow">{copy.guide.eyebrow}</p>
+      <h2 id="guide-title"><RichTitle text={copy.guide.title} /></h2>
+      <p class="section-intro">{copy.guide.text}</p>
       <div class="guide-steps">
         <article><Icon name="calendar" /><div><h3>Simpan jadwalnya</h3><p>Gunakan “Simpan tanggal” pada bagian acara untuk menambahkan jadwal ke kalender Anda. Periksa kembali waktu yang tertera.</p></div></article>
         <article><Icon name="pin" /><div><h3>Rencanakan perjalanan</h3><p>Buka “Petunjuk arah” untuk melihat rute ke lokasi. Beri waktu tambahan untuk perjalanan dan mencari tempat parkir.</p></div></article>
-        {guestSlug && <article><Icon name="heart" /><div><h3>Kabari kehadiran Anda</h3><p>Isi konfirmasi kehadiran melalui undangan ini agar kami dapat menyiapkan penyambutan.</p></div></article>}
+        {showRsvp && <article><Icon name="heart" /><div><h3>Kabari kehadiran Anda</h3><p>Isi konfirmasi kehadiran melalui undangan ini agar kami dapat menyiapkan penyambutan.</p></div></article>}
       </div>
       <div class="guest-faq">
         <details><summary>Bagaimana cara menyimpan jadwal?</summary><p>Ketuk “Simpan tanggal”, lalu buka berkas undangan.ics dengan aplikasi kalender. Konfirmasikan penambahan acara di aplikasi tersebut.</p></details>
         <details><summary>Bagaimana jika peta tidak tampil?</summary><p>Ketuk “Petunjuk arah” untuk membuka peta di tab baru. Alamat lengkap juga tercantum pada bagian acara.</p></details>
-        <details><summary>Apakah harus memberikan hadiah?</summary><p>Tidak. Kami berterima kasih atas doa dan perhatian Anda, dengan atau tanpa hadiah.</p></details>
+        {copy.gift.enabled && <details><summary>Apakah harus memberikan hadiah?</summary><p>Tidak. Kami berterima kasih atas doa dan perhatian Anda, dengan atau tanpa hadiah.</p></details>}
       </div>
     </section>
+    )}
 
+    {copy.closing.enabled && (
     <footer class="closing section" aria-labelledby="closing-title">
       <div class="closing-card">
         <span class="monogram" aria-hidden="true">{invitation.brideName.charAt(0)} <i>&</i> {invitation.groomName.charAt(0)}</span>
-        <p class="eyebrow">Terima kasih</p>
+        <p class="eyebrow">{copy.closing.eyebrow}</p>
         <p class="closing-message">{invitation.closing || 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.'}</p>
         {salam && <p class="closing-salam">{salam}</p>}
         <div class="rule" aria-hidden="true"></div>
@@ -274,14 +289,15 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
       </div>
       <p class="made-with">HARI BAHAGIA <Icon name="flower" /> MUGIA LANGGENG SALAWASNA</p>
     </footer>
+    )}
   </div>
   <nav class="invitation-nav" aria-label="Bagian undangan">
     <a href="#invitation-body" aria-label="Pembuka"><Icon name="home" /></a>
-    <a href="#mempelai">Mempelai</a>
-    <a href="#acara">Acara</a>
-    {media?.gallery.some(Boolean) && <a href="#galeri">Galeri</a>}
-    {guestSlug && <a href="#kehadiran">RSVP</a>}
-    <a href="#ucapan">Ucapan</a>
+    {copy.profiles.enabled && <a href="#mempelai">Mempelai</a>}
+    {copy.events.enabled && <a href="#acara">Acara</a>}
+    {showGallery && <a href="#galeri">Galeri</a>}
+    {showRsvp && <a href="#kehadiran">RSVP</a>}
+    {copy.wishes.enabled && <a href="#ucapan">Ucapan</a>}
   </nav>
 </main>
 

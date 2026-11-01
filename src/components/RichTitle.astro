@@ -1,0 +1,6 @@
+---
+// Admin-written heading: *word* becomes italic, a new line becomes <br>. Rendered as text, never HTML.
+const { text } = Astro.props as { text: string };
+const lines = text.split(/\r?\n/);
+---
+{lines.map((line, index) => <>{index > 0 && <br />}{line.split('*').map((part, j) => j % 2 ? <em>{part}</em> : part)}</>)}

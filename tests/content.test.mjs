@@ -90,3 +90,18 @@ test('rejects nonexistent local times at daylight-saving transitions', () => {
   });
   assert.equal(result.ok, false);
 });
+
+
+test('sections default to shown with built-in copy and accept overrides', async () => {
+  const { sectionCopy } = await import('../src/lib/content/index.ts');
+  const old = validateWeddingContent(content).content;
+  assert.equal(sectionCopy(old, 'gift').enabled, true);
+  assert.equal(sectionCopy(old, 'gift').title, 'Tanda *kasih*');
+  const edited = validateWeddingContent({ ...content, sections: { gift: { enabled: false, title: '  Hadiah  ' }, unknown: {} } });
+  assert.equal(edited.ok, true);
+  assert.equal(sectionCopy(edited.content, 'gift').enabled, false);
+  assert.equal(sectionCopy(edited.content, 'gift').title, 'Hadiah');
+  assert.equal(sectionCopy(edited.content, 'wishes').enabled, true);
+  assert.equal(validateWeddingContent({ ...content, sections: { gift: { enabled: 'no' } } }).ok, false);
+  assert.equal(validateWeddingContent({ ...content, sections: { gift: { title: 'x'.repeat(201) } } }).ok, false);
+});

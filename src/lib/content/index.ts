@@ -19,6 +19,31 @@ export type BirthOrder = (typeof birthOrders)[number];
 // "Putri Pertama dari Bapak A & Ibu B"; empty when no parents are set.
 export const lineage = (child: string, order: string, parents: string) => parents ? `${child} ${order} dari ${parents}` : '';
 
+// Invitation sections the admin can hide or re-word. Cover and desktop panel always show.
+export const sectionKeys = ['welcome', 'profiles', 'story', 'events', 'gallery', 'rsvp', 'gift', 'wishes', 'guide', 'closing'] as const;
+export type SectionKey = (typeof sectionKeys)[number];
+export type SectionCopy = { enabled: boolean; eyebrow: string; title: string; text: string };
+// Built-in copy; a field missing here is not editable for that section. In titles, *x* is italic and a new line breaks.
+export const sectionDefaults: Record<SectionKey, { label: string; eyebrow?: string; title?: string; text?: string }> = {
+  welcome: { label: 'Pembuka', title: 'Dengan penuh syukur,\n*kami mengundang Anda*', text: 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami.' },
+  profiles: { label: 'Mempelai', eyebrow: 'Silih asih, silih asah, silih asuh', title: 'Kedua *mempelai*' },
+  story: { label: 'Cerita Kami', eyebrow: 'Kisah perjalanan', title: 'Cerita *Kami*' },
+  events: { label: 'Acara', eyebrow: 'Waktu & tempat' },
+  gallery: { label: 'Galeri', eyebrow: 'Album foto', title: 'Galeri *foto*' },
+  rsvp: { label: 'Konfirmasi kehadiran (hanya tautan tamu)', eyebrow: 'RSVP', title: 'Konfirmasi *kehadiran*', text: 'Mohon kesediaan Anda untuk mengonfirmasi kehadiran. Undangan ini berlaku untuk satu orang.' },
+  gift: { label: 'Amplop digital', eyebrow: 'Amplop digital', title: 'Tanda *kasih*', text: 'Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Bagi yang ingin memberikan tanda kasih, dapat melalui rekening berikut.' },
+  wishes: { label: 'Ucapan & doa', eyebrow: 'Ucapan & doa', title: 'Kirim *doa restu*', text: 'Sampaikan ucapan dan doa restu untuk kedua mempelai, termasuk bila berhalangan hadir. Ucapan akan ditampilkan di undangan ini.' },
+  guide: { label: 'Panduan tamu', eyebrow: 'Panduan tamu', title: 'Informasi *tamu*', text: 'Beberapa informasi untuk membantu persiapan kehadiran Anda.' },
+  closing: { label: 'Penutup', eyebrow: 'Terima kasih' },
+};
+const blankSection = (): SectionCopy => ({ enabled: true, eyebrow: '', title: '', text: '' });
+// Saved override, or the built-in copy when blank. Old content has no sections.
+export function sectionCopy(content: Pick<WeddingContent, 'sections'>, key: SectionKey): SectionCopy {
+  const saved = content.sections?.[key] ?? blankSection();
+  const fallback = sectionDefaults[key];
+  return { enabled: saved.enabled, eyebrow: saved.eyebrow || fallback.eyebrow || '', title: saved.title || fallback.title || '', text: saved.text || fallback.text || '' };
+}
+
 export type WeddingContent = {
   title: string;
   greeting: string;
@@ -48,6 +73,7 @@ export type WeddingContent = {
   storyImage: WeddingImage | null;
   gallery: WeddingImage[];
   musicPath: string | null;
+  sections: Record<SectionKey, SectionCopy>;
 };
 
 type ContentResult = { ok: true; content: WeddingContent } | { ok: false; errors: string[] };
@@ -147,6 +173,27 @@ export function validateWeddingContent(value: unknown, requireComplete = true): 
   });
   const musicPath = value.musicPath === null || value.musicPath === undefined || value.musicPath === '' ? null : value.musicPath;
   if (musicPath !== null && (typeof musicPath !== 'string' || !isMediaPath(musicPath))) errors.push('Musik tidak valid.');
+  const sourceSections = value.sections === undefined ? {} : value.sections;
+  if (!isRecord(sourceSections)) errors.push('Pengaturan bagian undangan tidak valid.');
+  const sections = Object.fromEntries(sectionKeys.map((key) => {
+    const item = isRecord(sourceSections) ? sourceSections[key] : undefined;
+    if (item === undefined) return [key, blankSection()];
+    const label = sectionDefaults[key].label;
+    if (!isRecord(item) || (item.enabled !== undefined && typeof item.enabled !== 'boolean')) {
+      errors.push(`Bagian ${label} tidak valid.`);
+      return [key, blankSection()];
+    }
+    const field = (name: string, max: number) => {
+      const entry = item[name];
+      if (entry === undefined) return '';
+      if (typeof entry !== 'string' || entry.length > max) {
+        errors.push(`Bagian ${label}: teks tidak valid atau terlalu panjang.`);
+        return '';
+      }
+      return entry.trim();
+    };
+    return [key, { enabled: item.enabled !== false, eyebrow: field('eyebrow', 120), title: field('title', 200), text: field('text', 1000) }];
+  })) as Record<SectionKey, SectionCopy>;
   try {
     new Intl.DateTimeFormat('en', { timeZone });
   } catch {
@@ -196,7 +243,7 @@ export function validateWeddingContent(value: unknown, requireComplete = true): 
   const mediaPaths = [coverImage?.path, brideImage?.path, groomImage?.path, storyImage?.path, ...gallery.map((item) => item.path), musicPath].filter(Boolean);
   if (new Set(mediaPaths).size !== mediaPaths.length) errors.push('Objek media tidak boleh dipakai lebih dari satu kali.');
   if (errors.length) return { ok: false, errors };
-  return { ok: true, content: { title, greeting, brideName, groomName, coverBrideName, coverGroomName, brideChild, brideOrder, brideParents, groomChild, groomOrder, groomParents, brideBank, brideAccount, groomBank, groomAccount, description, timeZone, events, closing, coverImage, brideImage, groomImage, storyText, storyImage, gallery, musicPath: musicPath as string | null } };
+  return { ok: true, content: { title, greeting, brideName, groomName, coverBrideName, coverGroomName, brideChild, brideOrder, brideParents, groomChild, groomOrder, groomParents, brideBank, brideAccount, groomBank, groomAccount, description, timeZone, events, closing, coverImage, brideImage, groomImage, storyText, storyImage, gallery, musicPath: musicPath as string | null, sections } };
 }
 
 export function formatWeddingDate(value: string, timeZone: string, options: Intl.DateTimeFormatOptions = { dateStyle: 'full' }): string {
@@ -246,4 +293,5 @@ export const emptyWeddingContent: WeddingContent = {
   brideChild: 'Putri', brideOrder: 'Pertama', brideParents: '', groomChild: 'Putra', groomOrder: 'Pertama', groomParents: '', brideBank: '', brideAccount: '', groomBank: '', groomAccount: '', description: '', timeZone: 'Asia/Jakarta',
   events: [{ name: '', startsAt: '', endsAt: '', venue: '', address: '', mapUrl: '' }], closing: '',
   coverImage: null, brideImage: null, groomImage: null, storyText: '', storyImage: null, gallery: [], musicPath: null,
+  sections: Object.fromEntries(sectionKeys.map((key) => [key, blankSection()])) as Record<SectionKey, SectionCopy>,
 };

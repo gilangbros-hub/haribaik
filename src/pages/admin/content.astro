@@ -1,6 +1,6 @@
 ---
 import '../../styles/admin.css';
-import { birthOrders, childKinds, emptyWeddingContent } from '../../lib/content';
+import { birthOrders, childKinds, emptyWeddingContent, sectionDefaults, sectionKeys } from '../../lib/content';
 import { readWeddingDraft } from '../../lib/content/store';
 import { resolveWeddingMedia } from '../../lib/content/media';
 
@@ -71,6 +71,26 @@ if (Astro.locals.supabase) {
           <p class="md-card-hint">Tampil sebagai: "Putri Pertama dari Bapak ... & Ibu ...". Kosongkan nama orang tua untuk menyembunyikan.</p>
           <label class="md-field"><span>Deskripsi opsional</span><textarea name="description" maxlength="2000" rows="4">{content.description}</textarea></label>
           <label class="md-field"><span>Zona waktu (IANA, misalnya Asia/Jakarta)</span><input name="timeZone" maxlength="80" value={content.timeZone} /></label>
+        </section>
+
+        <section class="md-card" aria-labelledby="sec-sections">
+          <h2 id="sec-sections">Bagian undangan</h2>
+          <p class="md-card-hint">Matikan bagian yang tidak dipakai, atau ganti teksnya. Kosongkan kolom untuk memakai teks bawaan. Di judul, tulis *kata* untuk huruf miring dan tekan Enter untuk ganti baris. Sampul selalu tampil.</p>
+          <div class="md-media-grid">
+            {sectionKeys.map((key) => {
+              const fallback = sectionDefaults[key];
+              const saved = content.sections?.[key];
+              return (
+                <fieldset data-section={key}>
+                  <legend>{fallback.label}</legend>
+                  <label><input data-field="enabled" type="checkbox" checked={saved?.enabled !== false} /> Tampilkan</label>
+                  {fallback.eyebrow !== undefined && <label>Teks kecil di atas judul<input data-field="eyebrow" maxlength="120" value={saved?.eyebrow ?? ''} placeholder={fallback.eyebrow} /></label>}
+                  {fallback.title !== undefined && <label>Judul<textarea data-field="title" maxlength="200" rows="2" placeholder={fallback.title}>{saved?.title ?? ''}</textarea></label>}
+                  {fallback.text !== undefined && <label>Teks<textarea data-field="text" maxlength="1000" rows="3" placeholder={fallback.text}>{saved?.text ?? ''}</textarea></label>}
+                </fieldset>
+              );
+            })}
+          </div>
         </section>
 
         <section class="md-card" aria-labelledby="sec-photos">
@@ -247,6 +267,9 @@ if (Astro.locals.supabase) {
       [...event.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-key]')].map((field) => [field.dataset.key!, field.value]),
     ));
     Object.assign(content, mediaFromForm());
+    content.sections = Object.fromEntries([...form.querySelectorAll<HTMLElement>('[data-section]')].map((section) => [section.dataset.section!, Object.fromEntries(
+      [...section.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-field]')].map((field) => [field.dataset.field!, field instanceof HTMLInputElement && field.type === 'checkbox' ? field.checked : field.value]),
+    )]));
     return content;
   };
   const send = async (url: string, method: string, body?: unknown) => {

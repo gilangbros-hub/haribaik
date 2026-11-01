@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createSessionToken, credentialsMatch, sessionConfigured, sessionValid } from '../src/lib/admin-session.ts';
+import { hashSessionToken, newAdminError, newSessionToken } from '../src/lib/admin-session.ts';
 import { withPrivateNoStore } from '../src/lib/admin-response.ts';
 import { isSameOriginRequest } from '../src/lib/request-origin.ts';
 import { GET } from '../src/pages/api/admin/session.ts';
@@ -26,19 +26,15 @@ test('admin session endpoint rejects a missing session', async () => {
   assert.equal(response.status, 401);
 });
 
-test('own admin login: credentials and signed session cookie', () => {
-  assert.equal(credentialsMatch(' Admin@Example.com ', 'pw', 'admin@example.com', 'pw'), true);
-  assert.equal(credentialsMatch('admin@example.com', 'wrong', 'admin@example.com', 'pw'), false);
-  assert.equal(credentialsMatch('other@example.com', 'pw', 'admin@example.com', 'pw'), false);
-  const secret = 's'.repeat(32) + 'pw';
-  const now = Date.UTC(2026, 10, 1);
-  const token = createSessionToken(secret, now);
-  assert.equal(sessionValid(token, secret, now + 1000), true);
-  assert.equal(sessionValid(token, 's'.repeat(32) + 'new-password', now + 1000), false);
-  assert.equal(sessionValid(token, secret, now + 8 * 24 * 3600 * 1000), false);
-  assert.equal(sessionValid(`9999999999.${token.split('.')[1]}`, secret, now), false);
-  assert.equal(sessionValid(undefined, secret, now), false);
-  assert.equal(sessionConfigured({ ADMIN_EMAIL: 'a', ADMIN_PASSWORD: 'b', ADMIN_USER_ID: 'c', ADMIN_SESSION_SECRET: 'short' }), false);
+test('own admin login: random session tokens, hashed for storage, and new-account checks', () => {
+  const token = newSessionToken();
+  assert.notEqual(token, newSessionToken());
+  assert.match(hashSessionToken(token), /^[0-9a-f]{64}$/);
+  assert.notEqual(hashSessionToken(token), token);
+  assert.equal(newAdminError('admin@example.com', 'panjang-sekali'), null);
+  assert.equal(newAdminError('bukan-email', 'panjang-sekali'), 'Email tidak valid.');
+  assert.equal(newAdminError('admin@example.com', 'pendek'), 'Kata sandi minimal 10 karakter.');
+  assert.equal(newAdminError('admin@example.com', 'é'.repeat(37)), 'Kata sandi maksimal 72 karakter.');
 });
 
 test('admin session endpoint returns only the authorized admin identity', async () => {

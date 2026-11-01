@@ -1,0 +1,53 @@
+---
+import '../../styles/admin.css';
+
+const user = Astro.locals.adminUser;
+const db = Astro.locals.supabase;
+if (!user || !db) return Astro.redirect('/admin/login');
+const { data: admins, error } = await db.from('admin_users').select('email, created_at').order('created_at');
+if (error) Astro.response.status = 503;
+const created = Astro.url.searchParams.get('created');
+const failure = Astro.url.searchParams.get('error');
+const messages: Record<string, string> = {
+  invalid: 'Email tidak valid, atau kata sandi bukan 10–72 karakter.',
+  exists: 'Email itu sudah terdaftar.',
+  failed: 'Akun gagal dibuat. Coba lagi.',
+};
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="same-origin" />
+    <title>Akun admin — HariBahagia</title>
+  </head>
+  <body>
+    <main class="admin-shell">
+      <a class="admin-breadcrumb" href="/admin">← Admin</a>
+      <h1>Akun admin</h1>
+      {created && <p class="md-alert md-alert--info" role="status">Akun {created} dibuat. Akun ini sudah bisa login.</p>}
+      {failure && <p class="md-alert md-alert--error" role="alert">{messages[failure] ?? messages.failed}</p>}
+      {error && <p class="md-alert md-alert--error" role="alert">Daftar akun tidak dapat dimuat. Pastikan migrasi akun admin sudah dijalankan.</p>}
+
+      <section class="md-card" aria-labelledby="new-admin-title">
+        <h2 id="new-admin-title">Tambah akun</h2>
+        <p class="md-card-hint">Setiap akun bisa mengelola seluruh undangan. Kata sandi 10–72 karakter.</p>
+        <form method="post" action="/api/admin/users">
+          <label class="md-field"><span>Email</span><input name="email" type="email" maxlength="254" autocomplete="off" required /></label>
+          <label class="md-field"><span>Kata sandi</span><input name="password" type="password" minlength="10" maxlength="72" autocomplete="new-password" required /></label>
+          <div class="md-actions"><button class="md-btn" type="submit">Buat akun</button></div>
+        </form>
+      </section>
+
+      <section class="md-card" aria-labelledby="admins-title">
+        <h2 id="admins-title">Akun terdaftar ({admins?.length ?? 0})</h2>
+        <div class="md-table-wrap"><table class="md-table">
+          <thead><tr><th>Email</th><th>Dibuat</th></tr></thead>
+          <tbody>{(admins ?? []).map((admin) => <tr><td>{admin.email}</td><td>{new Date(admin.created_at).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</td></tr>)}</tbody>
+        </table></div>
+      </section>
+    </main>
+  </body>
+</html>

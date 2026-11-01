@@ -1,32 +1,17 @@
-import { createHmac, createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 export const ADMIN_COOKIE = 'hb_admin';
 export const SESSION_SECONDS = 7 * 24 * 60 * 60;
 
-const digest = (value: string) => createHash('sha256').update(value).digest();
-// The secret is "session secret + password", so changing either one logs every session out.
-const sign = (expires: string, secret: string) => createHmac('sha256', secret).update(expires).digest('base64url');
-const same = (a: string, b: string) => timingSafeEqual(digest(a), digest(b));
+// The cookie holds a random token; the database stores only its hash, so a leaked table cannot log anyone in.
+export const newSessionToken = () => randomBytes(32).toString('base64url');
+export const hashSessionToken = (token: string) => createHash('sha256').update(token).digest('hex');
 
-// Missing or weak settings fail closed: nobody can log in.
-export const sessionConfigured = (env: { ADMIN_EMAIL?: string; ADMIN_PASSWORD?: string; ADMIN_SESSION_SECRET?: string; ADMIN_USER_ID?: string }) =>
-  Boolean(env.ADMIN_EMAIL && env.ADMIN_PASSWORD && env.ADMIN_USER_ID && (env.ADMIN_SESSION_SECRET?.length ?? 0) >= 32);
-
-export function credentialsMatch(email: string, password: string, adminEmail: string, adminPassword: string) {
-  // Check both so a wrong email takes as long as a wrong password.
-  const emailOk = same(email.trim().toLowerCase(), adminEmail.trim().toLowerCase());
-  const passwordOk = same(password, adminPassword);
-  return emailOk && passwordOk;
-}
-
-export function createSessionToken(secret: string, now = Date.now()) {
-  const expires = String(Math.floor(now / 1000) + SESSION_SECONDS);
-  return `${expires}.${sign(expires, secret)}`;
-}
-
-export function sessionValid(token: string | undefined, secret: string, now = Date.now()) {
-  if (!token) return false;
-  const [expires, signature, extra] = token.split('.');
-  if (!expires || !signature || extra !== undefined || !/^\d+$/.test(expires)) return false;
-  return same(signature, sign(expires, secret)) && Number(expires) * 1000 > now;
+// Mirrors the create_admin_user checks so the form can explain the problem.
+export function newAdminError(email: string, password: string) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || email.trim().length > 254) return 'Email tidak valid.';
+  const bytes = new TextEncoder().encode(password).length;
+  if (bytes < 10) return 'Kata sandi minimal 10 karakter.';
+  if (bytes > 72) return 'Kata sandi maksimal 72 karakter.';
+  return null;
 }

@@ -4,9 +4,15 @@ See [the release and recovery runbook](docs/operations/release-readiness.md) for
 
 ## Admin authentication setup
 
-The app has its own single-admin login; Supabase Auth is not used to sign in. Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` (at least 32 random characters) and `ADMIN_USER_ID` in the server environment for each Vercel environment. `ADMIN_USER_ID` must be the UUID of an existing Supabase Auth user: it owns the draft row and the media folder, nobody logs in with it. Astro reads these values when building, so set them before deploying. Copy `.env.example` for local setup and keep real credentials out of Git.
+The app has its own admin login; Supabase Auth is not used to sign in. Set `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_USER_ID` in the server environment for each Vercel environment. `ADMIN_USER_ID` must be the UUID of an existing Supabase Auth user: it owns the draft row and the media folder, nobody logs in with it. Astro reads these values when building, so set them before deploying. Copy `.env.example` for local setup and keep real credentials out of Git.
 
-Login sets a signed, HTTP-only cookie valid for 7 days. Changing `ADMIN_PASSWORD` or `ADMIN_SESSION_SECRET` logs every session out. After login, admin requests use the server-only service-role key, so never expose it to browser code. Missing settings fail closed.
+Admin accounts live in `public.admin_users` (bcrypt hashes via pgcrypto) and sessions in `public.admin_sessions` (SHA-256 of a random cookie token, 7 days). Both are reachable only with the server-only service-role key; never expose it to browser code. Run migration `202611010001_own_admin_login.sql`, then create the first account in the SQL Editor:
+
+```sql
+select public.create_admin_user('you@example.com', 'a-long-unique-password');
+```
+
+After that, logged-in admins add accounts at `/admin/users`.
 
 ## Wedding content setup
 

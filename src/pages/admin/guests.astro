@@ -35,6 +35,8 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
       <section class="md-card" aria-labelledby="replace-title">
         <h2 id="replace-title">Ganti daftar dari CSV</h2>
         <p>Kolom wajib: <code>nama,slug</code>. Unduhan CSV dapat diimpor kembali; status RSVP tidak diubah. Batas 1 MB dan 1.000 tamu.</p>
+        <p>Slug boleh dikosongkan; sistem membuatnya dari nama. Hapus baris contoh di templat sebelum mengunggah.</p>
+        <div class="md-actions"><a class="md-btn md-btn--outlined" href="/templat-daftar-tamu.csv" download>Unduh templat CSV</a></div>
         <form id="guest-import">
           <label class="md-field"><span>File CSV</span><input name="file" type="file" accept=".csv,text/csv" required /></label>
           <div class="md-actions"><button class="md-btn" type="submit">Periksa perubahan</button></div>

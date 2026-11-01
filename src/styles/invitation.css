@@ -322,3 +322,13 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 @media (max-height: 650px) {
   .cover:not(:has(.cover-photo)) { padding-top: 100px !important; padding-bottom: 24px !important; }
 }
+
+
+/* Pieces cut from the peacock garden artwork. Kept still on purpose: they decorate, they carry no information. */
+.welcome-flower { width: 150px; height: 136px; object-fit: cover; mask-image: radial-gradient(closest-side, #000 60%, transparent); mix-blend-mode: multiply; }
+.profiles, .wishes, .guest-guide { overflow: hidden; isolation: isolate; }
+.profiles::before, .profiles::after, .wishes::before, .wishes::after { content: ''; position: absolute; z-index: -1; top: 0; width: 118px; height: 160px; background: url('/images/blossom-left.webp') left top / contain no-repeat; mix-blend-mode: multiply; pointer-events: none; }
+.profiles::before, .wishes::before { left: 0; }
+.profiles::after, .wishes::after { right: 0; background-image: url('/images/blossom-right.webp'); background-position: right top; }
+.guest-guide { padding-bottom: 190px; }
+.guest-guide::after { content: ''; position: absolute; z-index: -1; left: 0; bottom: 0; width: 150px; height: 185px; background: url('/images/peacock-left.webp') left bottom / contain no-repeat; mask-image: linear-gradient(to top right, #000 55%, transparent 88%); mix-blend-mode: multiply; pointer-events: none; }

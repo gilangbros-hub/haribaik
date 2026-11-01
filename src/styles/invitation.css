@@ -332,3 +332,48 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .profiles::after, .wishes::after { right: 0; background-image: url('/images/blossom-right.webp'); background-position: right top; }
 .guest-guide { padding-bottom: 190px; }
 .guest-guide::after { content: ''; position: absolute; z-index: -1; left: 0; bottom: 0; width: 150px; height: 185px; background: url('/images/peacock-left.webp') left bottom / contain no-repeat; mask-image: linear-gradient(to top right, #000 55%, transparent 88%); mix-blend-mode: multiply; pointer-events: none; }
+
+/* The photograph sits inside the same garden as the rest of the invitation. */
+.cover:has(.cover-photo) {
+  justify-content: flex-end;
+  padding: 0 30px max(28px, 5svh);
+  color: #164a53;
+  background: #fbf6eb url('/images/peacock-garden.webp') center / cover no-repeat;
+}
+.cover:has(.cover-photo)::before {
+  background: linear-gradient(90deg, #fbf6eb33, #fbf6ebdb 22%, #fbf6ebed 50%, #fbf6ebdb 78%, #fbf6eb33);
+}
+.cover .cover-photo {
+  z-index: -1;
+  inset: 14% auto auto;
+  width: min(50%, 230px);
+  height: 32%;
+  object-position: center 35%;
+  border: 5px solid #fbf6eb;
+  border-radius: 140px 140px 8px 8px;
+  box-shadow: 0 8px 28px #164a5330, 0 0 0 1px #a9736a88;
+}
+.cover:has(.cover-photo) .cover-botanical { display: none; }
+.cover:has(.cover-photo) .cover-frame { border-color: #a76c6a66; }
+.cover:has(.cover-photo) .cover-frame::after { border-color: #a76c6a33; }
+.cover:has(.cover-photo) .cover-topline,
+.cover:has(.cover-photo) > .eyebrow,
+.cover:has(.cover-photo) .cover-date,
+.cover:has(.cover-photo) .recipient-card,
+.cover:has(.cover-photo) .recipient-card strong { color: #164a53; text-shadow: none; }
+.cover:has(.cover-photo) h1 { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: .12em; font-size: clamp(2.5rem, 7svh, 3.7rem); line-height: .95; text-shadow: none; }
+.cover:has(.cover-photo) h1 i { color: #a65f66; align-self: center; }
+.cover:has(.cover-photo) .cover-date { margin: 14px 0; }
+.cover:has(.cover-photo) .recipient-card { margin-bottom: 15px; }
+.cover:has(.cover-photo) .open-button { background: #164a53; border-color: #164a53; color: #fffaf1; }
+.cover:has(.cover-photo) .music-button { top: 105px; right: 25px; transform: none; background: #164a53; }
+.cover:has(.cover-photo) .sample-note { color: #164a53; }
+@media (max-height: 650px) {
+  .cover:has(.cover-photo) { padding-top: 0 !important; padding-bottom: 20px !important; }
+  .cover .cover-photo { top: 16%; height: 29%; }
+  .cover:has(.cover-photo) h1 { font-size: 2.5rem !important; }
+  .cover:has(.cover-photo) .music-button { top: 75px; }
+}
+@media (min-width: 1000px) {
+  .story-landscape { opacity: .38; mask-image: linear-gradient(transparent 20%, black 75%); }
+}

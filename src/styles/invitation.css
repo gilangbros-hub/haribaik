@@ -292,3 +292,33 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
   .will-reveal { opacity: 1; translate: none; }
 }
+
+/* Palette and illustration echo the peacock garden on the wedding souvenirs. */
+:root { --paper: #fbf6eb; --pine: #164a53; --muted: #596c67; --gold: #9a5d57; --line: #bc8d8266; }
+.cover:not(:has(.cover-photo)) { justify-content: center; padding: 120px 32px 20%; color: #164a53; background: #fbf6eb; }
+.cover:not(:has(.cover-photo))::before { background: linear-gradient(90deg, transparent, #fbf6eb99 25%, #fbf6ebcc 50%, #fbf6eb99 75%, transparent); }
+.cover:not(:has(.cover-photo)) .cover-botanical { display: none; }
+.cover:not(:has(.cover-photo)) .cover-frame { border-color: #a76c6a66; }
+.cover:not(:has(.cover-photo)) .cover-topline,
+.cover:not(:has(.cover-photo)) > .eyebrow,
+.cover:not(:has(.cover-photo)) .cover-date,
+.cover:not(:has(.cover-photo)) .recipient-card,
+.cover:not(:has(.cover-photo)) .recipient-card strong { color: #164a53; text-shadow: none; }
+.cover:not(:has(.cover-photo)) h1 { text-shadow: none; }
+.cover:not(:has(.cover-photo)) h1 i { color: #a65f66; }
+.cover:not(:has(.cover-photo)) .open-button { background: #164a53; border-color: #164a53; color: #fffaf1; }
+.cover:not(:has(.cover-photo)) .sample-note { color: #164a53; }
+.profiles, .guest-guide { background: #f4ece6; }
+.rsvp, .gift { background: #eef2e9; }
+.events-wrap { background-color: #164a53; }
+.event-card { background: #123f49c9; }
+.closing { background: linear-gradient(#fbf6ebe8, #fbf6ebd9), url('/images/peacock-garden.webp') center bottom / cover no-repeat; }
+@media (min-width: 1000px) {
+  .desktop-story { background: #fbf6eb; }
+  .story-landscape { height: 100%; object-position: center bottom; opacity: .75; mask-image: linear-gradient(transparent, black 48%); }
+  .story-title em { color: #a65f66; }
+  .story-footnote { color: #164a53; text-shadow: 0 1px 8px #fbf6eb; }
+}
+@media (max-height: 650px) {
+  .cover:not(:has(.cover-photo)) { padding-top: 100px !important; padding-bottom: 24px !important; }
+}

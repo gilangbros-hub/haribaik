@@ -337,8 +337,8 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .cover .cover-photo {
   z-index: -1;
   inset: 14% auto auto;
-  width: min(50%, 230px);
-  height: 32%;
+  width: min(70%, 320px);
+  height: 42%;
   object-position: center 35%;
   border: 5px solid #fbf6eb;
   border-radius: 140px 140px 8px 8px;
@@ -361,7 +361,7 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .cover:has(.cover-photo) .sample-note { color: #164a53; }
 @media (max-height: 650px) {
   .cover:has(.cover-photo) { padding-top: 0 !important; padding-bottom: 20px !important; }
-  .cover .cover-photo { top: 16%; height: 29%; }
+  .cover .cover-photo { top: 16%; height: 34%; }
   .cover:has(.cover-photo) h1 { font-size: 2.5rem !important; }
   .cover:has(.cover-photo) .music-button { top: 75px; }
 }

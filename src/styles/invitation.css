@@ -38,8 +38,6 @@ main { position: relative; width: min(100%, 540px); margin: 0 auto; background: 
 .cover-botanical { position: absolute; width: 150px; height: 330px; opacity: .16; bottom: 0; transform-origin: bottom; animation: sway 9s ease-in-out infinite alternate; }
 .botanical-left { left: -80px; transform: rotate(18deg); }
 .botanical-right { right: -80px; scale: -1 1; animation-delay: -4s; }
-.cover-topline { position: absolute; top: 36px; display: flex; align-items: center; gap: 18px; margin: 0; font-size: .54rem; letter-spacing: .27em; color: #ebdbb3; }
-.cover-topline > span:first-child, .cover-topline > span:last-child { font-size: 1.1rem; }
 .eyebrow { margin: 0 0 15px; color: var(--gold); font-size: .59rem; font-weight: 500; letter-spacing: .2em; line-height: 1.8; text-transform: uppercase; }
 .cover > .eyebrow { position: absolute; top: 75px; margin: 0; max-width: calc(100% - 68px); color: #f7f4eb; text-shadow: 0 1px 8px #0b201b; }
 .cover h1 { text-shadow: 0 2px 20px #0b201b66; font-size: clamp(3.4rem, 13vw, 4.5rem); }
@@ -64,6 +62,7 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .sample-note { margin: 18px 0 0; font-size: .64rem; color: #d4ddcf; }
 .section { position: relative; padding: 80px 36px; text-align: center; }
 .section h2 { margin: 0 0 24px; font-size: clamp(2.7rem, 10vw, 3.5rem); line-height: .98; letter-spacing: -.035em; }
+.profiles > h2 { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .section-number { display: block; margin-bottom: 38px; color: var(--gold); font-size: .53rem; letter-spacing: .22em; }
 .welcome { padding-top: 65px; padding-bottom: 70px; }
 .welcome::after { content: ''; display: block; width: 70px; height: 1px; background: var(--line); margin: 32px auto 0; }
@@ -187,7 +186,6 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .icon { display: inline-block; flex: none; vertical-align: middle; }
 .cover { height: 100svh; min-height: 0; padding: 150px 30px 36px; }
 .cover h1 { font-size: clamp(2.8rem, 8svh, 4.5rem); }
-.cover-topline { font-size: .62rem; }
 .cover > .eyebrow { font-size: .68rem; }
 .cover-date { font-size: .68rem; }
 .recipient-card { font-size: .73rem; }
@@ -248,7 +246,6 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
   .cover h1 { font-size: clamp(2.4rem, 8svh, 3.4rem) !important; }
   .cover-date { margin-block: 12px; }
   .recipient-card { margin-bottom: 12px; gap: 4px; }
-  .cover-topline { top: 25px; }
   .cover > .eyebrow { top: 60px; }
   .cover .music-button { top: 90px; min-height: 36px; padding-block: 7px; }
 }
@@ -278,14 +275,12 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 @media (max-height: 800px) {
   .cover { padding-top: max(240px, 45svh); padding-bottom: 32px; }
   .cover h1 { font-size: clamp(3rem, 11vw, 3.8rem); }
-  .cover-topline { margin-bottom: 14px; }
   h1 { font-size: 4rem; }
   .cover-date { margin-block: 18px 16px; }
   .recipient-card { margin-bottom: 16px; }
 }
 @media (max-width: 380px) {
   .cover { padding-inline: 28px; padding-bottom: 38px; }
-  .cover-topline { font-size: .47rem; margin-bottom: 16px; }
   .section { padding-inline: 26px; }
   .invitation-nav a { padding-inline: 10px; }
 }
@@ -300,7 +295,6 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .cover:not(:has(.cover-photo))::before { background: linear-gradient(90deg, transparent, #fbf6eb99 25%, #fbf6ebcc 50%, #fbf6eb99 75%, transparent); }
 .cover:not(:has(.cover-photo)) .cover-botanical { display: none; }
 .cover:not(:has(.cover-photo)) .cover-frame { border-color: #a76c6a66; }
-.cover:not(:has(.cover-photo)) .cover-topline,
 .cover:not(:has(.cover-photo)) > .eyebrow,
 .cover:not(:has(.cover-photo)) .cover-date,
 .cover:not(:has(.cover-photo)) .recipient-card,
@@ -348,7 +342,6 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .cover:has(.cover-photo) .cover-botanical { display: none; }
 .cover:has(.cover-photo) .cover-frame { border-color: #a76c6a66; }
 .cover:has(.cover-photo) .cover-frame::after { border-color: #a76c6a33; }
-.cover:has(.cover-photo) .cover-topline,
 .cover:has(.cover-photo) > .eyebrow,
 .cover:has(.cover-photo) .cover-date,
 .cover:has(.cover-photo) .recipient-card,
@@ -360,7 +353,7 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .cover:has(.cover-photo) .open-button { background: #164a53; border-color: #164a53; color: #fffaf1; }
 .cover:has(.cover-photo) .music-button { top: 105px; right: 25px; transform: none; background: #164a53; }
 .cover:has(.cover-photo) .sample-note { color: #164a53; }
-.cover .cover-topline, .cover > .eyebrow, .cover .cover-date { font-size: .875rem; font-weight: 600; letter-spacing: .12em; }
+.cover > .eyebrow, .cover .cover-date { font-size: .875rem; font-weight: 600; letter-spacing: .12em; }
 .cover .recipient-card { font-size: .9375rem; }
 .cover .recipient-card strong { font-size: 1.125rem; font-weight: 600; }
 .cover .open-button { font-size: 1rem; }

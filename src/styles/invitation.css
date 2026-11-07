@@ -360,6 +360,11 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .cover:has(.cover-photo) .open-button { background: #164a53; border-color: #164a53; color: #fffaf1; }
 .cover:has(.cover-photo) .music-button { top: 105px; right: 25px; transform: none; background: #164a53; }
 .cover:has(.cover-photo) .sample-note { color: #164a53; }
+.cover .cover-topline, .cover > .eyebrow, .cover .cover-date { font-size: .875rem; font-weight: 600; letter-spacing: .12em; }
+.cover .recipient-card { font-size: .9375rem; }
+.cover .recipient-card strong { font-size: 1.125rem; font-weight: 600; }
+.cover .open-button { font-size: 1rem; }
+.cover .music-button { font-size: .875rem; }
 @media (max-height: 650px) {
   .cover:has(.cover-photo) { padding-top: 0 !important; padding-bottom: 20px !important; }
   .cover .cover-photo { top: 16%; height: 34%; }

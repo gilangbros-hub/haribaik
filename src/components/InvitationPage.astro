@@ -276,14 +276,14 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
     {copy.closing.enabled && (
     <footer class="closing section" aria-labelledby="closing-title">
       <div class="closing-card">
-        <span class="monogram" aria-hidden="true">{invitation.brideName.charAt(0)} <i>&</i> {invitation.groomName.charAt(0)}</span>
+        <span class="monogram" aria-hidden="true">{(invitation.coverBrideName || invitation.brideName).charAt(0)} <i>&</i> {(invitation.coverGroomName || invitation.groomName).charAt(0)}</span>
         <p class="eyebrow">{copy.closing.eyebrow}</p>
         <p class="closing-message">{invitation.closing || 'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.'}</p>
         {salam && <p class="closing-salam">{salam}</p>}
         <div class="rule" aria-hidden="true"></div>
         <p class="eyebrow">Kami yang berbahagia</p>
         <h2 id="closing-title">{invitation.coverBrideName || invitation.brideName} <i>&</i> {invitation.coverGroomName || invitation.groomName}</h2>
-        {families.length > 0 && <p class="closing-family">Beserta keluarga besar<br />{families.join(' · ')}</p>}
+        {families.length > 0 && <p class="closing-family">Beserta keluarga besar{families.map((family) => <strong>{family}</strong>)}</p>}
         {firstDate && <p class="footer-date">{firstDate}</p>}
       </div>
       <p class="made-with">HARI BAHAGIA <Icon name="flower" /> MUGIA LANGGENG SALAWASNA</p>

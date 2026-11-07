@@ -169,6 +169,7 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .closing-card h2 { margin: 0 0 14px; font-size: 2.4rem; line-height: 1.1; }
 .closing-card h2 i { display: block; margin: 4px 0; color: var(--gold); font-size: 1.4rem; }
 .closing-family { margin: 0 auto 16px; max-width: 300px; color: var(--muted); font-size: .78rem; line-height: 1.8; }
+.closing-family strong { display: block; margin-top: 6px; font-weight: 700; }
 .footer-date { color: var(--muted); font-size: .58rem; line-height: 1.8; letter-spacing: .12em; text-transform: uppercase; }
 .made-with { margin: 64px 0 0; color: var(--muted); font-size: .45rem; letter-spacing: .12em; }
 .made-with span { margin: 0 8px; color: var(--gold); }

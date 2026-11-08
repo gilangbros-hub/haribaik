@@ -6,6 +6,7 @@ import { formatWeddingDate, lineage, sectionCopy, sectionKeys, type SectionCopy,
 import type { WeddingMediaUrls } from '../lib/content/media';
 import type { GuestWish } from '../lib/guests/wishes';
 import '../styles/invitation.css';
+import { sectionNumbers } from '../lib/section-numbers';
 
 interface Props {
   invitation: WeddingContent;
@@ -39,6 +40,13 @@ const families = [invitation.brideParents, invitation.groomParents].filter(Boole
 const copy = Object.fromEntries(sectionKeys.map((key) => [key, sectionCopy(invitation, key)])) as Record<SectionKey, SectionCopy>;
 const showGallery = copy.gallery.enabled && media?.gallery.some(Boolean);
 const showRsvp = copy.rsvp.enabled && guestSlug;
+const numbers = sectionNumbers([
+  copy.welcome.enabled && 'welcome', copy.profiles.enabled && 'profiles',
+  copy.story.enabled && (storyBlocks.length > 0 || !!media?.storyImage) && 'story',
+  ...(copy.events.enabled ? invitation.events.map((_, index) => `event-${index}`) : []),
+  showGallery && 'gallery', !!showRsvp && 'rsvp', copy.gift.enabled && accounts.length > 0 && 'gift',
+  copy.wishes.enabled && 'wishes', copy.guide.enabled && 'guide', copy.closing.enabled && 'closing',
+]);
 ---
 
 <aside class="desktop-story" aria-label="Pernikahan">
@@ -83,7 +91,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
   <div id="invitation-body" class="invitation-body" tabindex="-1" hidden>
     {copy.welcome.enabled && (
     <section class="welcome section" aria-labelledby="welcome-title">
-      <span class="section-number" aria-hidden="true">01 / PAMBUKA</span>
+      <span class="section-number" aria-hidden="true">{numbers.welcome} / PAMBUKA</span>
       <p class="eyebrow">{invitation.greeting}</p>
       <h2 id="welcome-title"><RichTitle text={copy.welcome.title} /></h2>
       <p>{copy.welcome.text}</p>
@@ -94,8 +102,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
 
     {copy.profiles.enabled && (
     <section id="mempelai" class="profiles section" aria-labelledby="profiles-title">
-      <span class="section-number" aria-hidden="true">02 / MEMPELAI</span>
-      <p class="eyebrow">{copy.profiles.eyebrow}</p>
+      <span class="section-number" aria-hidden="true">{numbers.profiles} / MEMPELAI</span>
       <h2 id="profiles-title"><RichTitle text={copy.profiles.title} /></h2>
       <div class="profile-grid">
           {profiles.map((profile, index) => {
@@ -117,6 +124,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
 
     {copy.story.enabled && (storyBlocks.length > 0 || media?.storyImage) && (
       <section id="cerita" class="story section" aria-labelledby="story-title" style={media?.storyImage ? `--story-bg: url("${media.storyImage}")` : undefined}>
+        <span class="section-number" aria-hidden="true">{numbers.story} / CERITA</span>
         <p class="eyebrow">{copy.story.eyebrow}</p>
         <h2 id="story-title"><RichTitle text={copy.story.title} /></h2>
         <div class="story-body">
@@ -138,7 +146,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
     <div id="acara" class="events-wrap">
     {invitation.events.map((event, index) => (
       <section class="event section" aria-labelledby={`event-title-${index}`}>
-        <span class="section-number" aria-hidden="true">{String(index + 3).padStart(2, '0')} / WAKTU & TEMPAT</span>
+        <span class="section-number" aria-hidden="true">{numbers[`event-${index}`]} / WAKTU & TEMPAT</span>
         <p class="eyebrow">{copy.events.eyebrow}</p>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
         <article class="event-card">
@@ -172,6 +180,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
 
     {showGallery && media && (
       <section id="galeri" class="gallery section" aria-labelledby="gallery-title">
+        <span class="section-number" aria-hidden="true">{numbers.gallery} / GALERI</span>
         <p class="eyebrow">{copy.gallery.eyebrow}</p>
         <h2 id="gallery-title"><RichTitle text={copy.gallery.title} /></h2>
         <div class="gallery-grid">
@@ -182,6 +191,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
 
     {showRsvp && guestSlug && (
     <section id="kehadiran" class="rsvp section" aria-labelledby="rsvp-title">
+      <span class="section-number" aria-hidden="true">{numbers.rsvp} / KEHADIRAN</span>
       <span class="ornament"><Icon name="heart" /></span>
       <p class="eyebrow">{copy.rsvp.eyebrow}</p>
       <h2 id="rsvp-title"><RichTitle text={copy.rsvp.title} /></h2>
@@ -202,6 +212,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
 
     {copy.gift.enabled && accounts.length > 0 && (
       <section id="hadiah" class="gift section" aria-labelledby="gift-title">
+        <span class="section-number" aria-hidden="true">{numbers.gift} / HADIAH</span>
         <span class="section-icon"><Icon name="gift" /></span>
         <p class="eyebrow">{copy.gift.eyebrow}</p>
         <h2 id="gift-title"><RichTitle text={copy.gift.title} /></h2>
@@ -222,6 +233,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
 
     {copy.wishes.enabled && (<>
     <section id="ucapan" class="wishes section" aria-labelledby="wishes-title">
+      <span class="section-number" aria-hidden="true">{numbers.wishes} / UCAPAN</span>
       <span class="section-icon"><Icon name="message" /></span>
       <p class="eyebrow">{copy.wishes.eyebrow}</p>
       <h2 id="wishes-title"><RichTitle text={copy.wishes.title} /></h2>
@@ -256,6 +268,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
 
     {copy.guide.enabled && (
     <section id="panduan" class="guest-guide section" aria-labelledby="guide-title">
+      <span class="section-number" aria-hidden="true">{numbers.guide} / PANDUAN</span>
       <p class="eyebrow">{copy.guide.eyebrow}</p>
       <h2 id="guide-title"><RichTitle text={copy.guide.title} /></h2>
       <p class="section-intro">{copy.guide.text}</p>
@@ -274,6 +287,7 @@ const showRsvp = copy.rsvp.enabled && guestSlug;
 
     {copy.closing.enabled && (
     <footer class="closing section" aria-labelledby="closing-title">
+      <span class="section-number" aria-hidden="true">{numbers.closing} / PENUTUP</span>
       <div class="closing-card">
         <span class="monogram" aria-hidden="true">{(invitation.coverBrideName || invitation.brideName).charAt(0)} <i>&</i> {(invitation.coverGroomName || invitation.groomName).charAt(0)}</span>
         <p class="eyebrow">{copy.closing.eyebrow}</p>

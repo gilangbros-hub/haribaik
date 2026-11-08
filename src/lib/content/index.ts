@@ -26,7 +26,7 @@ export type SectionCopy = { enabled: boolean; eyebrow: string; title: string; te
 // Built-in copy; a field missing here is not editable for that section. In titles, *x* is italic and a new line breaks.
 export const sectionDefaults: Record<SectionKey, { label: string; eyebrow?: string; title?: string; text?: string }> = {
   welcome: { label: 'Pembuka', title: 'Dengan penuh syukur,\n*kami mengundang Anda*', text: 'Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami.' },
-  profiles: { label: 'Mempelai', eyebrow: 'Silih asih, silih asah, silih asuh', title: 'Kedua *mempelai*' },
+  profiles: { label: 'Mempelai', title: 'The Bride and The Groom' },
   story: { label: 'Cerita Kami', eyebrow: 'Kisah perjalanan', title: 'Cerita *Kami*' },
   events: { label: 'Acara', eyebrow: 'Waktu & tempat' },
   gallery: { label: 'Galeri', eyebrow: 'Album foto', title: 'Galeri *foto*' },

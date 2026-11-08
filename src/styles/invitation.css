@@ -62,7 +62,6 @@ h1 i { font-size: .48em; line-height: 1.15; color: var(--gold); font-weight: 400
 .sample-note { margin: 18px 0 0; font-size: .64rem; color: #d4ddcf; }
 .section { position: relative; padding: 80px 36px; text-align: center; }
 .section h2 { margin: 0 0 24px; font-size: clamp(2.7rem, 10vw, 3.5rem); line-height: .98; letter-spacing: -.035em; }
-.profiles > h2 { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .section-number { display: block; margin-bottom: 38px; color: var(--gold); font-size: .53rem; letter-spacing: .22em; }
 .welcome { padding-top: 65px; padding-bottom: 70px; }
 .welcome::after { content: ''; display: block; width: 70px; height: 1px; background: var(--line); margin: 32px auto 0; }

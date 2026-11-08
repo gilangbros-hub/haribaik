@@ -1,9 +1,12 @@
 ---
 import '../../styles/admin.css';
 import { getGuests, guestAdminDb } from '../../lib/guests/server';
+import { readPublishedWedding } from '../../lib/content/store';
+import { whatsappMessage } from '../../lib/guests/whatsapp';
 
 if (!Astro.locals.adminUser) return Astro.redirect('/admin/login');
 const allGuests = await getGuests(guestAdminDb());
+const wedding = await readPublishedWedding(Astro.locals.supabase!);
 const query = (Astro.url.searchParams.get('q') ?? '').trim().toLocaleLowerCase('id');
 const status = ['active', 'inactive', 'all'].includes(Astro.url.searchParams.get('status') ?? '') ? Astro.url.searchParams.get('status')! : 'active';
 const guests = allGuests.filter((guest) => (status === 'all' || guest.active === (status === 'active'))
@@ -64,23 +67,27 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
           </div>
         </form>
         {!canonicalUrl && <p class="md-alert md-alert--info">Atur PUBLIC_SITE_URL untuk mengaktifkan penyalinan tautan tamu.</p>}
+        {!wedding && <p class="md-alert md-alert--info">Publikasikan undangan untuk mengaktifkan pesan WhatsApp.</p>}
         <div class="md-table-wrap">
           <table class="md-table">
-            <thead><tr><th>Nama</th><th>Slug</th><th>Status tamu</th><th>RSVP</th><th>Jawaban terakhir</th><th>Tautan</th></tr></thead>
+            <thead><tr><th>Nama</th><th>Slug</th><th>Status tamu</th><th>RSVP</th><th>Jawaban terakhir</th><th>Tautan</th><th>Aksi</th></tr></thead>
             <tbody>
               {guests.map((guest) => {
                 const rsvp = guest.guest_rsvps;
+                const url = `${canonicalUrl}/${encodeURIComponent(guest.slug)}`;
                 return <tr>
                   <td>{guest.name}</td><td>{guest.slug}</td><td><span class={`md-badge ${guest.active ? 'md-badge--yes' : 'md-badge--no'}`}>{guest.active ? 'Aktif' : 'Nonaktif'}</span></td>
                   <td>{rsvp?.status === 'attending' ? 'Hadir' : rsvp?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</td>
                   <td>{rsvp?.answered_at ? new Date(rsvp.answered_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '—'}</td>
-                  <td>{guest.active && canonicalUrl ? <button class="md-btn md-btn--text" type="button" data-copy={`${canonicalUrl}/${encodeURIComponent(guest.slug)}`}>Salin URL</button> : '—'}</td>
+                  <td>{guest.active && canonicalUrl ? <><button class="md-btn md-btn--text" type="button" data-copy={url} aria-label={`Salin URL untuk ${guest.name}`}>Salin URL</button> {wedding && <button class="md-btn md-btn--text" type="button" data-copy={whatsappMessage(wedding, guest.name, url)} aria-label={`Salin pesan WhatsApp untuk ${guest.name}`}>Salin pesan WA</button>}</> : '—'}</td>
+                  <td>{guest.active && <button class="md-btn md-btn--text" type="button" data-remove-id={guest.id} data-remove-name={guest.name} aria-label={`Hapus ${guest.name} dari daftar aktif`}>Hapus</button>}</td>
                 </tr>;
               })}
-              {!guests.length && <tr><td colspan="6">Tidak ada tamu yang cocok.</td></tr>}
+              {!guests.length && <tr><td colspan="7">Tidak ada tamu yang cocok.</td></tr>}
             </tbody>
           </table>
         </div>
+        <p id="remove-status" class="md-status" role="status" aria-live="polite"></p>
       </section>
     </main>
     <script>
@@ -127,6 +134,17 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
       document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(button.dataset.copy ?? ''); button.textContent = 'Tersalin'; }
         catch { button.textContent = 'Gagal menyalin'; }
+      }));
+      document.querySelectorAll<HTMLButtonElement>('[data-remove-id]').forEach((button) => button.addEventListener('click', async () => {
+        if (!confirm(`Hapus ${button.dataset.removeName} dari daftar aktif? Tautan tamu akan dinonaktifkan, tetapi RSVP tetap tersimpan.`)) return;
+        const status = document.querySelector<HTMLParagraphElement>('#remove-status')!;
+        button.disabled = true;
+        try {
+          const response = await fetch(`/api/admin/guests/${encodeURIComponent(button.dataset.removeId!)}`, { method: 'DELETE', credentials: 'same-origin' });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'Tamu gagal dihapus.');
+          location.reload();
+        } catch (error) { status.textContent = errorMessage(error); button.disabled = false; }
       }));
     </script>
   </body>

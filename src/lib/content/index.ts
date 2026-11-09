@@ -20,7 +20,7 @@ export type BirthOrder = (typeof birthOrders)[number];
 export const lineage = (child: string, order: string, parents: string) => parents ? `${child} ${order} dari ${parents}` : '';
 
 // Invitation sections the admin can hide or re-word. Cover and desktop panel always show.
-export const sectionKeys = ['welcome', 'profiles', 'story', 'events', 'gallery', 'rsvp', 'gift', 'wishes', 'guide', 'closing'] as const;
+export const sectionKeys = ['welcome', 'profiles', 'story', 'events', 'gallery', 'gift', 'wishes', 'guide', 'closing'] as const;
 export type SectionKey = (typeof sectionKeys)[number];
 export type SectionCopy = { enabled: boolean; eyebrow: string; title: string; text: string };
 // Built-in copy; a field missing here is not editable for that section. In titles, *x* is italic and a new line breaks.
@@ -30,7 +30,6 @@ export const sectionDefaults: Record<SectionKey, { label: string; eyebrow?: stri
   story: { label: 'Cerita Kami', eyebrow: 'Kisah perjalanan', title: 'Cerita *Kami*' },
   events: { label: 'Acara', eyebrow: 'Waktu & tempat' },
   gallery: { label: 'Galeri', eyebrow: 'Album foto', title: 'Galeri *foto*' },
-  rsvp: { label: 'Konfirmasi kehadiran (hanya tautan tamu)', eyebrow: 'RSVP', title: 'Konfirmasi *kehadiran*', text: 'Mohon kesediaan Anda untuk mengonfirmasi kehadiran. Undangan ini berlaku untuk satu orang.' },
   gift: { label: 'Amplop digital', eyebrow: 'Amplop digital', title: 'Tanda *kasih*', text: 'Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Bagi yang ingin memberikan tanda kasih, dapat melalui rekening berikut.' },
   wishes: { label: 'Ucapan & doa', eyebrow: 'Ucapan & doa', title: 'Kirim *doa restu*', text: 'Sampaikan ucapan dan doa restu untuk kedua mempelai, termasuk bila berhalangan hadir. Ucapan akan ditampilkan di undangan ini.' },
   guide: { label: 'Panduan tamu', eyebrow: 'Panduan tamu', title: 'Informasi *tamu*', text: 'Beberapa informasi untuk membantu persiapan kehadiran Anda.' },

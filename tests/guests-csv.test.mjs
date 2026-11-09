@@ -29,23 +29,34 @@ test('requires a stable slug when a blank slug name matches a saved guest', () =
   );
 });
 
-test('exports spreadsheet-safe CSV and imports exported names unchanged without applying RSVP columns', () => {
+test('exports spreadsheet-safe CSV and imports exported names unchanged without applying delivery status', () => {
   const source = [
-    { name: '=1+1', slug: 'formula', rsvp: 'attending', answeredAt: '2026-10-22T00:00:00Z' },
-    { name: '+1+2', slug: 'plus', rsvp: '', answeredAt: null },
-    { name: '@SUM(1)', slug: 'at', rsvp: '', answeredAt: null },
-    { name: '-1+1', slug: 'minus', rsvp: '', answeredAt: null },
-    { name: '\t=1+1', slug: 'tab-formula', rsvp: '', answeredAt: null },
-    { name: '\tNama', slug: 'tab-name', rsvp: '', answeredAt: null },
-    { name: "'=literal", slug: 'apostrophe-formula', rsvp: '', answeredAt: null },
-    { name: "'Nama", slug: 'apostrophe-name', rsvp: '', answeredAt: null },
-    { name: '  +2+2', slug: 'whitespace', rsvp: '', answeredAt: null },
-    { name: 'Dewi, "Dewi"\nKedua', slug: 'quoted-name', rsvp: 'declined', answeredAt: null },
+    { name: '=1+1', slug: 'formula', sent: false, category: null },
+    { name: '+1+2', slug: 'plus', sent: false, category: null },
+    { name: '@SUM(1)', slug: 'at', sent: false, category: null },
+    { name: '-1+1', slug: 'minus', sent: false, category: null },
+    { name: '\t=1+1', slug: 'tab-formula', sent: false, category: null },
+    { name: '\tNama', slug: 'tab-name', sent: false, category: null },
+    { name: "'=literal", slug: 'apostrophe-formula', sent: false, category: null },
+    { name: "'Nama", slug: 'apostrophe-name', sent: false, category: null },
+    { name: '  +2+2', slug: 'whitespace', sent: false, category: null },
+    { name: 'Dewi, "Dewi"\nKedua', slug: 'quoted-name', sent: false, category: null },
   ];
   const csv = exportGuestsCsv(source);
   assert.match(csv, /'=1\+1/);
-  assert.match(csv, /waktu_jawaban_terakhir/);
+  assert.match(csv, /status_pengiriman/);
   const roundTrip = parseGuestsCsv(csv);
   assert.deepEqual(roundTrip.map(({ name }) => name), source.map(({ name }) => name));
-  assert.equal('rsvp' in roundTrip[0], false);
+  assert.equal('sent' in roundTrip[0], false);
+});
+
+
+test('optional categories round-trip and validate without changing older CSVs', () => {
+  const rows = parseGuestsCsv('nama,slug,kategori\nAyu,ayu,Dhanar\nBudi,budi,');
+  assert.deepEqual(rows, [{ name: 'Ayu', slug: 'ayu', category: 'dhanar' }, { name: 'Budi', slug: 'budi', category: '' }]);
+  assert.deepEqual(analyzeGuestImport(rows, []).rows, rows);
+  assert.deepEqual(parseGuestsCsv('nama,kategori\nAyu,Ortu'), [{ name: 'Ayu', slug: '', category: 'ortu' }]);
+  assert.throws(() => parseGuestsCsv('nama,slug,kategori\nAyu,ayu,teman'), /kategori/i);
+  const csv = exportGuestsCsv([{ name: 'Ayu', slug: 'ayu', category: 'sheilly', sent: true }]);
+  assert.deepEqual(parseGuestsCsv(csv), [{ name: 'Ayu', slug: 'ayu', category: 'sheilly' }]);
 });

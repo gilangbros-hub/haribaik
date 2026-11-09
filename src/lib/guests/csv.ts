@@ -1,4 +1,4 @@
-export type CsvGuest = { name: string; slug: string };
+export type CsvGuest = { name: string; slug: string; category?: string };
 export type ExistingGuest = { id: string; name: string; slug: string; active: boolean };
 export type GuestPreview = {
   rows: CsvGuest[];
@@ -66,16 +66,19 @@ export function parseGuestsCsv(input: string): CsvGuest[] {
   const table = recordsFromCsv(input);
   const headers = table.shift()?.map((header) => header.trim().toLowerCase());
   // The slug column is optional: a nama-only file gets every slug generated from the name.
-  if (!headers || headers[0] !== 'nama' || (headers.length > 1 && headers[1] !== 'slug') || headers.length !== new Set(headers).size) {
+  if (!headers || headers[0] !== 'nama' || (headers.length > 1 && !['slug', 'kategori'].includes(headers[1]!)) || headers.length !== new Set(headers).size) {
     throw new Error('Header CSV harus dimulai dengan kolom nama (lalu slug, opsional) yang unik.');
   }
-  const isExport = headers.includes('status_rsvp') && headers.includes('waktu_jawaban_terakhir');
+  const isExport = headers.includes('status_pengiriman') || (headers.includes('status_rsvp') && headers.includes('waktu_jawaban_terakhir'));
   if (!table.length) throw new Error('CSV tidak memiliki baris tamu.');
   const slugs = new Set<string>();
   return table.map((cells, index) => {
     if (cells.length !== headers.length) throw new Error(`Baris ${index + 2}: jumlah kolom tidak sesuai header.`);
     let name = cells[0]!;
-    const slug = cells[1] ?? '';
+    const slug = headers.includes('slug') ? cells[headers.indexOf('slug')]! : '';
+    const categoryIndex = headers.indexOf('kategori');
+    const category = categoryIndex < 0 ? undefined : cells[categoryIndex]!.trim().toLocaleLowerCase('id');
+    if (category !== undefined && !['', 'dhanar', 'sheilly', 'ortu', 'keluarga'].includes(category)) throw new Error(`Baris ${index + 2}: kategori harus Dhanar, Sheilly, Ortu, atau Keluarga.`);
     if (isExport && name.startsWith("''")) name = name.slice(1);
     else if (isExport && name.startsWith("'")
       && (formulaStart.test(name.slice(1)) || formulaStart.test(name.slice(1).trimStart()))) name = name.slice(1);
@@ -83,7 +86,7 @@ export function parseGuestsCsv(input: string): CsvGuest[] {
     if (slug && !validSlug(slug)) throw new Error(`Baris ${index + 2}: slug tidak valid.`);
     if (slug && slugs.has(slug)) throw new Error(`Baris ${index + 2}: slug duplikat (${slug}).`);
     if (slug) slugs.add(slug);
-    return { name, slug };
+    return category === undefined ? { name, slug } : { name, slug, category };
   });
 }
 
@@ -92,11 +95,11 @@ export function analyzeGuestImport(rows: CsvGuest[], current: ExistingGuest[]): 
   const names = new Set(current.map((guest) => guest.name.trim().toLocaleLowerCase('id')));
   const used = new Set(current.map((guest) => guest.slug));
   const requested = new Set(rows.flatMap(({ slug }) => slug ? [slug] : []));
-  const resolved = rows.map(({ name, slug }) => {
+  const resolved = rows.map(({ name, slug, category }) => {
     if (!slug && names.has(name.trim().toLocaleLowerCase('id'))) {
-      throw new Error(`Nama "${name}" sudah tersimpan; isi slug tetap untuk menjaga identitas dan RSVP.`);
+      throw new Error(`Nama "${name}" sudah tersimpan; isi slug tetap untuk menjaga identitas dan status pengiriman.`);
     }
-    if (slug) return { name, slug };
+    if (slug) return category === undefined ? { name, slug } : { name, slug, category };
     const base = slugFromName(name);
     if (!base) throw new Error(`Nama "${name}" tidak dapat menjadi slug; isi slug yang valid.`);
     let candidate = base;
@@ -106,7 +109,7 @@ export function analyzeGuestImport(rows: CsvGuest[], current: ExistingGuest[]): 
     }
     used.add(candidate);
     requested.add(candidate);
-    return { name, slug: candidate };
+    return category === undefined ? { name, slug: candidate } : { name, slug: candidate, category };
   });
   const imported = new Set(resolved.map(({ slug }) => slug));
   const counts = {
@@ -123,9 +126,9 @@ function csvCell(value: string) {
   return `"${safe.replaceAll('"', '""')}"`;
 }
 
-export function exportGuestsCsv(guests: Array<{ name: string; slug: string; rsvp: string; answeredAt: string | null }>) {
+export function exportGuestsCsv(guests: Array<{ name: string; slug: string; sent: boolean; category: string | null }>) {
   return '\uFEFF' + [
-    ['nama', 'slug', 'status_rsvp', 'waktu_jawaban_terakhir'],
-    ...guests.map(({ name, slug, rsvp, answeredAt }) => [name, slug, rsvp, answeredAt ?? '']),
+    ['nama', 'slug', 'kategori', 'status_pengiriman'],
+    ...guests.map(({ name, slug, sent, category }) => [name, slug, category ?? '', sent ? 'Sudah dikirim' : 'Belum dikirim']),
   ].map((row) => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }

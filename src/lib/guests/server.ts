@@ -5,7 +5,8 @@ export type GuestRow = {
   name: string;
   slug: string;
   active: boolean;
-  guest_rsvps: { status: 'attending' | 'declined'; answered_at: string } | null;
+  sent: boolean;
+  category: string | null;
 };
 
 export function guestAdminDb() {
@@ -18,13 +19,10 @@ export function guestAdminDb() {
 
 export async function getGuests(db: ReturnType<typeof guestAdminDb>) {
   const { data, error } = await db.from('guests')
-    .select('id,name,slug,active,guest_rsvps(status,answered_at)')
+    .select('id,name,slug,active,sent,category')
     .order('name', { ascending: true });
   if (error) throw error;
-  return (data ?? []).map((guest) => ({
-    ...guest,
-    guest_rsvps: Array.isArray(guest.guest_rsvps) ? guest.guest_rsvps[0] ?? null : guest.guest_rsvps ?? null,
-  })) as GuestRow[];
+  return (data ?? []) as GuestRow[];
 }
 
 export function csvError(error: unknown) {

@@ -15,11 +15,10 @@ interface Props {
   calendarUrl?: string;
   media?: WeddingMediaUrls;
   guestSlug?: string;
-  rsvpStatus?: 'attending' | 'declined' | null;
   wishes?: GuestWish[];
 }
 
-const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics', media, guestSlug, rsvpStatus = null, wishes = [] } = Astro.props;
+const { invitation, recipient = 'Sahabat dan keluarga', preview = false, calendarUrl = '/calendar.ics', media, guestSlug, wishes = [] } = Astro.props;
 const wishDate = (value: string) => new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: invitation.timeZone }).format(new Date(value));
 const coupleName = `${invitation.brideName} & ${invitation.groomName}`;
 const firstDate = invitation.events[0] ? formatWeddingDate(invitation.events[0].startsAt, invitation.timeZone) : '';
@@ -39,12 +38,11 @@ const salam = /assalamu/i.test(invitation.greeting) ? 'Wassalamu’alaikum warah
 const families = [invitation.brideParents, invitation.groomParents].filter(Boolean);
 const copy = Object.fromEntries(sectionKeys.map((key) => [key, sectionCopy(invitation, key)])) as Record<SectionKey, SectionCopy>;
 const showGallery = copy.gallery.enabled && media?.gallery.some(Boolean);
-const showRsvp = copy.rsvp.enabled && guestSlug;
 const numbers = sectionNumbers([
   copy.welcome.enabled && 'welcome', copy.profiles.enabled && 'profiles',
   copy.story.enabled && (storyBlocks.length > 0 || !!media?.storyImage) && 'story',
   ...(copy.events.enabled ? invitation.events.map((_, index) => `event-${index}`) : []),
-  showGallery && 'gallery', !!showRsvp && 'rsvp', copy.gift.enabled && accounts.length > 0 && 'gift',
+  showGallery && 'gallery', copy.gift.enabled && accounts.length > 0 && 'gift',
   copy.wishes.enabled && 'wishes', copy.guide.enabled && 'guide', copy.closing.enabled && 'closing',
 ]);
 ---
@@ -189,27 +187,6 @@ const numbers = sectionNumbers([
       </section>
     )}
 
-    {showRsvp && guestSlug && (
-    <section id="kehadiran" class="rsvp section" aria-labelledby="rsvp-title">
-      <span class="section-number" aria-hidden="true">{numbers.rsvp} / KEHADIRAN</span>
-      <span class="ornament"><Icon name="heart" /></span>
-      <p class="eyebrow">{copy.rsvp.eyebrow}</p>
-      <h2 id="rsvp-title"><RichTitle text={copy.rsvp.title} /></h2>
-      <>
-        <p>{copy.rsvp.text}</p>
-        <form data-rsvp-form data-endpoint={`/api/guests/${encodeURIComponent(guestSlug)}/rsvp`}>
-          <fieldset>
-            <legend>Apakah Anda akan hadir?</legend>
-            <label><input type="radio" name="status" value="attending" checked={rsvpStatus === 'attending'} required /> Hadir</label>
-            <label><input type="radio" name="status" value="declined" checked={rsvpStatus === 'declined'} required /> Tidak hadir</label>
-          </fieldset>
-          <button type="submit">Simpan jawaban</button>
-          <p data-rsvp-status role="status" aria-live="polite">{rsvpStatus === 'attending' ? 'Jawaban tersimpan: hadir.' : rsvpStatus === 'declined' ? 'Jawaban tersimpan: tidak hadir.' : ''}</p>
-        </form>
-      </>
-    </section>
-    )}
-
     {copy.gift.enabled && accounts.length > 0 && (
       <section id="hadiah" class="gift section" aria-labelledby="gift-title">
         <span class="section-number" aria-hidden="true">{numbers.gift} / HADIAH</span>
@@ -275,7 +252,6 @@ const numbers = sectionNumbers([
       <div class="guide-steps">
         <article><Icon name="calendar" /><div><h3>Simpan jadwalnya</h3><p>Gunakan “Simpan tanggal” pada bagian acara untuk menambahkan jadwal ke kalender Anda. Periksa kembali waktu yang tertera.</p></div></article>
         <article><Icon name="pin" /><div><h3>Rencanakan perjalanan</h3><p>Buka “Petunjuk arah” untuk melihat rute ke lokasi. Beri waktu tambahan untuk perjalanan dan mencari tempat parkir.</p></div></article>
-        {showRsvp && <article><Icon name="heart" /><div><h3>Kabari kehadiran Anda</h3><p>Isi konfirmasi kehadiran melalui undangan ini agar kami dapat menyiapkan penyambutan.</p></div></article>}
       </div>
       <div class="guest-faq">
         <details><summary>Bagaimana cara menyimpan jadwal?</summary><p>Ketuk “Simpan tanggal”, lalu buka berkas undangan.ics dengan aplikasi kalender. Konfirmasikan penambahan acara di aplikasi tersebut.</p></details>
@@ -308,7 +284,6 @@ const numbers = sectionNumbers([
     {copy.profiles.enabled && <a href="#mempelai">Mempelai</a>}
     {copy.events.enabled && <a href="#acara">Acara</a>}
     {showGallery && <a href="#galeri">Galeri</a>}
-    {showRsvp && <a href="#kehadiran">RSVP</a>}
     {copy.wishes.enabled && <a href="#ucapan">Ucapan</a>}
   </nav>
 </main>
@@ -418,35 +393,4 @@ const numbers = sectionNumbers([
     }, { threshold: 0, rootMargin: '0px 0px -35px 0px' });
     sections.forEach((section) => { section.classList.add('will-reveal'); observer.observe(section); });
   }
-</script>
-
-<script>
-  document.querySelector<HTMLFormElement>('[data-rsvp-form]')?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-    const status = form.querySelector<HTMLElement>('[data-rsvp-status]')!;
-    const answer = new FormData(form).get('status');
-    if (answer !== 'attending' && answer !== 'declined') {
-      status.textContent = 'Pilih hadir atau tidak hadir.';
-      return;
-    }
-    button.disabled = true;
-    status.textContent = 'Mengirim jawaban…';
-    try {
-      const response = await fetch(form.dataset.endpoint!, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ status: answer }),
-      });
-      const result = await response.json();
-      if (!response.ok || result.saved !== true) throw new Error(result.error || 'Jawaban belum tersimpan.');
-      status.textContent = answer === 'attending' ? 'Jawaban tersimpan: hadir.' : 'Jawaban tersimpan: tidak hadir.';
-    } catch (error) {
-      status.textContent = error instanceof Error ? error.message : 'Jawaban belum tersimpan. Periksa koneksi lalu coba lagi.';
-    } finally {
-      button.disabled = false;
-    }
-  });
 </script>

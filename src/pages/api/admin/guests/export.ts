@@ -6,9 +6,7 @@ export const GET: APIRoute = async ({ locals }) => {
   if (!locals.adminUser) return Response.json({ error: 'Admin access required.' }, { status: 401 });
   try {
     const guests = await getGuests(guestAdminDb());
-    const active = guests.filter(({ active }) => active).map(({ name, slug, guest_rsvps }) => ({
-      name, slug, rsvp: guest_rsvps?.status ?? '', answeredAt: guest_rsvps?.answered_at ?? null,
-    }));
+    const active = guests.filter(({ active }) => active);
     return new Response(exportGuestsCsv(active), { headers: {
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': 'attachment; filename="daftar-tamu.csv"',

@@ -16,7 +16,6 @@ let canonicalUrl: string | null = null;
 let invitation: WeddingContent | null = null;
 let media = null;
 let recipient: string | null = null;
-let rsvpStatus: 'attending' | 'declined' | null = null;
 let wishes: GuestWish[] = [];
 let unavailable = false;
 
@@ -39,7 +38,6 @@ if (validSlug) {
           throw new Error('PUBLIC_SITE_URL must be an HTTPS canonical origin, or a localhost origin for development.');
         }
         recipient = guest.name;
-        rsvpStatus = guest.rsvpStatus;
         canonicalUrl = new URL(encodeURIComponent(slug), base).toString();
         // Wishes are extra; a failed read must not hide the invitation.
         wishes = await readGuestWishes(guestAdminDb()).catch(() => []);
@@ -68,7 +66,7 @@ const calendarUrl = canonicalUrl ? new URL('/calendar.ics', canonicalUrl).toStri
   </head>
   <body>
     {invitation && recipient
-      ? <InvitationPage invitation={invitation} recipient={recipient} calendarUrl={calendarUrl} guestSlug={slug} rsvpStatus={rsvpStatus} wishes={wishes} media={media ?? undefined} />
+      ? <InvitationPage invitation={invitation} recipient={recipient} calendarUrl={calendarUrl} guestSlug={slug} wishes={wishes} media={media ?? undefined} />
       : <main class="publication-state"><h1>{unavailable ? 'Undangan belum dapat dimuat' : 'Undangan tidak tersedia'}</h1><p>{unavailable ? 'Silakan coba kembali beberapa saat lagi.' : 'Tautan undangan tidak tersedia.'}</p></main>}
   </body>
 </html>

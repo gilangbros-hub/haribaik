@@ -12,9 +12,7 @@ const status = ['active', 'inactive', 'all'].includes(Astro.url.searchParams.get
 const guests = allGuests.filter((guest) => (status === 'all' || guest.active === (status === 'active'))
   && (!query || guest.name.toLocaleLowerCase('id').includes(query) || guest.slug.includes(query)));
 const canonicalUrl = import.meta.env.PUBLIC_SITE_URL?.replace(/\/$/, '') ?? '';
-const attending = allGuests.filter(({ active, guest_rsvps }) => active && guest_rsvps?.status === 'attending').length;
-const declined = allGuests.filter(({ active, guest_rsvps }) => active && guest_rsvps?.status === 'declined').length;
-const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !guest_rsvps).length;
+const sent = allGuests.filter(({ active, sent }) => active && sent).length;
 ---
 <!doctype html>
 <html lang="id">
@@ -31,13 +29,12 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
       <div class="admin-topbar"><h1>Daftar tamu</h1></div>
       <ul class="md-stats">
         <li class="md-stat"><b>{allGuests.filter(({ active }) => active).length}</b><span>Tamu aktif</span></li>
-        <li class="md-stat"><b>{attending}</b><span>Hadir</span></li>
-        <li class="md-stat"><b>{declined}</b><span>Tidak hadir</span></li>
-        <li class="md-stat"><b>{unanswered}</b><span>Belum menjawab</span></li>
+        <li class="md-stat"><b>{sent}</b><span>Sudah dikirim</span></li>
+        <li class="md-stat"><b>{allGuests.filter(({ active }) => active).length - sent}</b><span>Belum dikirim</span></li>
       </ul>
-      <section class="md-card" aria-labelledby="replace-title">
+      <section class="md-card guest-import" aria-labelledby="replace-title">
         <h2 id="replace-title">Ganti daftar dari CSV</h2>
-        <p>Kolom wajib: <code>nama</code>. Slug dibuat otomatis dari nama. Unduhan CSV dapat diimpor kembali; status RSVP tidak diubah. Batas 1 MB dan 1.000 tamu.</p>
+        <p>Kolom wajib: <code>nama</code>. Slug dibuat otomatis dari nama. Kategori opsional: Dhanar, Sheilly, Ortu, atau Keluarga. Unduhan CSV dapat diimpor kembali; status pengiriman tetap tersimpan. Batas 1 MB dan 1.000 tamu.</p>
         <p>Hapus baris contoh di templat sebelum mengunggah. Saat memperbarui daftar yang sudah ada, pakai "Unduh CSV daftar aktif" agar slug tamu lama tetap sama.</p>
         <div class="md-actions"><a class="md-btn md-btn--outlined" href="/templat-daftar-tamu.csv" download>Unduh templat CSV</a></div>
         <form id="guest-import">
@@ -50,9 +47,9 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
           <div class="md-actions"><button id="apply" class="md-btn" type="button" disabled>Terapkan penggantian</button></div>
         </div>
       </section>
-      <section class="md-card" aria-labelledby="list-title">
+      <section class="md-card guest-list" aria-labelledby="list-title">
         <h2 id="list-title">Cari dan bagikan</h2>
-        <form method="get">
+        <form method="get" class="guest-filters">
           <label class="md-field"><span>Cari nama atau slug</span><input name="q" value={Astro.url.searchParams.get('q') ?? ''} /></label>
           <label class="md-field"><span>Status</span>
             <select name="status">
@@ -70,20 +67,18 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
         {!wedding && <p class="md-alert md-alert--info">Publikasikan undangan untuk mengaktifkan pesan WhatsApp.</p>}
         <div class="md-table-wrap">
           <table class="md-table">
-            <thead><tr><th>Nama</th><th>Slug</th><th>Status tamu</th><th>RSVP</th><th>Jawaban terakhir</th><th>Tautan</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>Nama</th><th>Slug</th><th>Kategori</th><th>Status tamu</th><th>Tautan</th><th>Aksi</th><th>Sudah dikirim</th></tr></thead>
             <tbody>
               {guests.map((guest) => {
-                const rsvp = guest.guest_rsvps;
                 const url = `${canonicalUrl}/${encodeURIComponent(guest.slug)}`;
                 return <tr>
-                  <td>{guest.name}</td><td>{guest.slug}</td><td><span class={`md-badge ${guest.active ? 'md-badge--yes' : 'md-badge--no'}`}>{guest.active ? 'Aktif' : 'Nonaktif'}</span></td>
-                  <td>{rsvp?.status === 'attending' ? 'Hadir' : rsvp?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</td>
-                  <td>{rsvp?.answered_at ? new Date(rsvp.answered_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '—'}</td>
-                  <td>{guest.active && canonicalUrl ? <><button class="md-btn md-btn--text" type="button" data-copy={url} aria-label={`Salin URL untuk ${guest.name}`}>Salin URL</button> {wedding && <button class="md-btn md-btn--text" type="button" data-copy={whatsappMessage(wedding, guest.name, url)} aria-label={`Salin pesan WhatsApp untuk ${guest.name}`}>Salin pesan WA</button>}</> : '—'}</td>
-                  <td>{guest.active && <button class="md-btn md-btn--text" type="button" data-remove-id={guest.id} data-remove-name={guest.name} aria-label={`Hapus ${guest.name} dari daftar aktif`}>Hapus</button>}</td>
+                  <td data-label="Nama"><strong>{guest.name}</strong></td><td data-label="Slug">{guest.slug}</td><td data-label="Kategori">{guest.category ? guest.category.charAt(0).toUpperCase() + guest.category.slice(1) : "?"}</td><td data-label="Status tamu"><span class={`md-badge ${guest.active ? 'md-badge--yes' : 'md-badge--no'}`}>{guest.active ? 'Aktif' : 'Nonaktif'}</span></td>
+                  <td data-label="Bagikan" class="guest-share">{guest.active && canonicalUrl ? <><button class="md-btn md-btn--text" type="button" data-copy={url} aria-label={`Salin URL untuk ${guest.name}`}>Salin URL</button> {wedding && <button class="md-btn md-btn--text" type="button" data-copy={whatsappMessage(wedding, guest.name, url)} aria-label={`Salin pesan WhatsApp untuk ${guest.name}`}>Salin pesan WA</button>}</> : '—'}</td>
+                  <td data-label="Aksi">{guest.active && <button class="md-btn md-btn--text md-btn--danger-text" type="button" data-remove-id={guest.id} data-remove-name={guest.name} aria-label={`Hapus ${guest.name} dari daftar aktif`}>Hapus</button>}</td>
+                  <td data-label="Sudah dikirim"><input type="checkbox" data-sent-id={guest.id} checked={guest.sent} disabled={!guest.active} aria-label={`Tandai undangan untuk ${guest.name} sudah dikirim`} /></td>
                 </tr>;
               })}
-              {!guests.length && <tr><td colspan="7">Tidak ada tamu yang cocok.</td></tr>}
+              {!guests.length && <tr class="guest-empty"><td colspan="7">Tidak ada tamu yang cocok.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -122,7 +117,7 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
         } catch (error) { statusText.textContent = errorMessage(error); }
       });
       apply.addEventListener('click', async () => {
-        if (!canApply || !confirm('Ganti seluruh daftar aktif sesuai CSV ini? RSVP yang sudah masuk tetap tersimpan.')) return;
+        if (!canApply || !confirm('Ganti seluruh daftar aktif sesuai CSV ini? Status pengiriman tamu yang ada tetap tersimpan.')) return;
         apply.disabled = true; statusText.textContent = 'Menerapkan penggantian…';
         try {
           const { counts } = await send('/api/admin/guests/apply');
@@ -132,11 +127,22 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
         catch (error) { statusText.textContent = errorMessage(error); apply.disabled = false; }
       });
       document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
+        const label = button.textContent;
         try { await navigator.clipboard.writeText(button.dataset.copy ?? ''); button.textContent = 'Tersalin'; }
         catch { button.textContent = 'Gagal menyalin'; }
+        setTimeout(() => { button.textContent = label; }, 2000);
+      }));
+      document.querySelectorAll<HTMLInputElement>('[data-sent-id]').forEach((checkbox) => checkbox.addEventListener('change', async () => {
+        const status = document.querySelector<HTMLParagraphElement>('#remove-status')!;
+        checkbox.disabled = true;
+        try {
+          const response = await fetch(`/api/admin/guests/${encodeURIComponent(checkbox.dataset.sentId!)}`, { method: 'PATCH', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sent: checkbox.checked }) });
+          if (!response.ok) throw new Error('Status pengiriman gagal disimpan. Coba lagi.');
+          location.reload();
+        } catch (error) { checkbox.checked = !checkbox.checked; status.textContent = errorMessage(error); checkbox.disabled = false; }
       }));
       document.querySelectorAll<HTMLButtonElement>('[data-remove-id]').forEach((button) => button.addEventListener('click', async () => {
-        if (!confirm(`Hapus ${button.dataset.removeName} dari daftar aktif? Tautan tamu akan dinonaktifkan, tetapi RSVP tetap tersimpan.`)) return;
+        if (!confirm(`Hapus ${button.dataset.removeName} dari daftar aktif? Tautan tamu akan dinonaktifkan, tetapi data tamu tetap tersimpan.`)) return;
         const status = document.querySelector<HTMLParagraphElement>('#remove-status')!;
         button.disabled = true;
         try {
@@ -149,3 +155,37 @@ const unanswered = allGuests.filter(({ active, guest_rsvps }) => active && !gues
     </script>
   </body>
 </html>
+
+<style>
+  .guest-import > p { max-width: 72ch; font-size: .9rem; }
+  .guest-import form { margin-top: 20px; }
+  .guest-import .md-status:empty, .guest-list .md-status:empty { display: none; }
+  .guest-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(150px, 1fr); gap: 0 16px; margin: 20px 0 24px; }
+  .guest-filters .md-actions { grid-column: 1 / -1; margin-top: 0; }
+  .guest-import a.md-btn--outlined, .guest-list a.md-btn--outlined { background: var(--surface); border: 1.5px solid #d9d9de; }
+  .guest-import a.md-btn--outlined:hover, .guest-list a.md-btn--outlined:hover { background: var(--fill); box-shadow: none; }
+  .guest-list .md-table-wrap { border: 1px solid var(--hairline); box-shadow: none; }
+  .guest-list .md-table { min-width: 1020px; }
+  .guest-list .md-table th, .guest-list .md-table td { vertical-align: top; }
+  .guest-list .md-table td:first-child { min-width: 180px; }
+  .guest-list .md-table td:nth-child(2) { min-width: 160px; color: var(--ink-2); }
+  .guest-list .guest-share { min-width: 160px; }
+  .guest-list button.md-btn--text { min-height: 36px; padding: 0 12px; background: var(--fill); font-size: .8rem; }
+  .guest-list button.md-btn--text:hover { background: var(--fill-2); box-shadow: none; }
+  .guest-list button.md-btn--danger-text { color: var(--danger-ink); background: var(--danger-tint); }
+  .guest-share button + button { margin-top: 6px; }
+  @media (max-width: 700px) {
+    .guest-filters { grid-template-columns: 1fr; }
+    .guest-filters .md-actions { grid-column: auto; }
+    .guest-list .md-table-wrap { overflow: visible; border: 0; background: transparent; }
+    .guest-list .md-table, .guest-list .md-table tbody, .guest-list .md-table tr, .guest-list .md-table td { display: block; min-width: 0; width: 100%; }
+    .guest-list .md-table thead { display: none; }
+    .guest-list .md-table tr { margin-bottom: 12px; padding: 8px 16px; border: 1px solid var(--hairline); border-radius: 16px; }
+    .guest-list .md-table td, .guest-list .md-table thead + tbody tr:first-child td { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-top: 1px solid var(--hairline); text-align: right; overflow-wrap: anywhere; }
+    .guest-list .md-table td:first-child { border-top: 0 !important; }
+    .guest-list .md-table td::before { content: attr(data-label); flex: 0 0 110px; color: var(--ink-2); font-size: .8rem; font-weight: 700; text-align: left; }
+    .guest-list .md-table .guest-share { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+    .guest-share button + button { margin-top: 0; }
+    .guest-list .guest-empty td::before { content: none; }
+  }
+</style>

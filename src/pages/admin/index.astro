@@ -9,9 +9,7 @@ Astro.response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
 const guests = await getGuests(guestAdminDb());
 const activeGuests = guests.filter(({ active }) => active);
 const inactiveGuests = guests.filter(({ active }) => !active);
-const attending = activeGuests.filter(({ guest_rsvps }) => guest_rsvps?.status === 'attending').length;
-const declined = activeGuests.filter(({ guest_rsvps }) => guest_rsvps?.status === 'declined').length;
-const unanswered = activeGuests.filter(({ guest_rsvps }) => !guest_rsvps).length;
+const sent = activeGuests.filter((guest) => guest.sent).length;
 ---
 <!doctype html>
 <html lang="id">
@@ -34,15 +32,14 @@ const unanswered = activeGuests.filter(({ guest_rsvps }) => !guest_rsvps).length
 
       <ul class="md-stats">
         <li class="md-stat"><b>{activeGuests.length}</b><span>Tamu aktif</span></li>
-        <li class="md-stat"><b>{attending}</b><span>Hadir</span></li>
-        <li class="md-stat"><b>{declined}</b><span>Tidak hadir</span></li>
-        <li class="md-stat"><b>{unanswered}</b><span>Belum menjawab</span></li>
+        <li class="md-stat"><b>{sent}</b><span>Sudah dikirim</span></li>
+        <li class="md-stat"><b>{activeGuests.length - sent}</b><span>Belum dikirim</span></li>
       </ul>
 
-      <section class="md-card" aria-labelledby="rsvp-summary-title">
-        <h2 id="rsvp-summary-title">Tamu nonaktif ({inactiveGuests.length})</h2>
+      <section class="md-card" aria-labelledby="inactive-summary-title">
+        <h2 id="inactive-summary-title">Tamu nonaktif ({inactiveGuests.length})</h2>
         {inactiveGuests.length
-          ? <div class="md-table-wrap"><table class="md-table"><thead><tr><th>Nama</th><th>RSVP</th></tr></thead><tbody>{inactiveGuests.map((guest) => <tr><td>{guest.name}</td><td>{guest.guest_rsvps?.status === 'attending' ? 'Hadir' : guest.guest_rsvps?.status === 'declined' ? 'Tidak hadir' : 'Belum menjawab'}</td></tr>)}</tbody></table></div>
+          ? <ul>{inactiveGuests.map((guest) => <li>{guest.name}</li>)}</ul>
           : <p class="md-card-hint">Tidak ada tamu nonaktif.</p>}
       </section>
 
@@ -50,7 +47,7 @@ const unanswered = activeGuests.filter(({ guest_rsvps }) => !guest_rsvps).length
         <h2>Kelola</h2>
         <ul class="admin-nav">
           <li><a href="/admin/content"><b>Konten undangan</b><span>Draf, foto, musik, publish</span></a></li>
-          <li><a href="/admin/guests"><b>Daftar tamu</b><span>CSV, RSVP, tautan tamu</span></a></li>
+          <li><a href="/admin/guests"><b>Daftar tamu</b><span>CSV, status pengiriman, tautan tamu</span></a></li>
           <li><a href="/admin/users"><b>Akun admin</b><span>Tambah akun untuk login</span></a></li>
         </ul>
       </section>

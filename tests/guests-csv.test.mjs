@@ -53,10 +53,18 @@ test('exports spreadsheet-safe CSV and imports exported names unchanged without 
 
 test('optional categories round-trip and validate without changing older CSVs', () => {
   const rows = parseGuestsCsv('nama,slug,kategori\nAyu,ayu,Dhanar\nBudi,budi,');
-  assert.deepEqual(rows, [{ name: 'Ayu', slug: 'ayu', category: 'dhanar' }, { name: 'Budi', slug: 'budi', category: '' }]);
+  assert.deepEqual(rows, [{ name: 'Ayu', slug: 'ayu', category: 'Dhanar' }, { name: 'Budi', slug: 'budi', category: '' }]);
   assert.deepEqual(analyzeGuestImport(rows, []).rows, rows);
-  assert.deepEqual(parseGuestsCsv('nama,kategori\nAyu,Ortu'), [{ name: 'Ayu', slug: '', category: 'ortu' }]);
-  assert.throws(() => parseGuestsCsv('nama,slug,kategori\nAyu,ayu,teman'), /kategori/i);
+  assert.deepEqual(parseGuestsCsv('nama,kategori\nAyu,Ortu'), [{ name: 'Ayu', slug: '', category: 'Ortu' }]);
+  assert.equal(parseGuestsCsv('nama,slug,kategori\nAyu,ayu,Teman Kantor')[0].category, 'Teman Kantor');
   const csv = exportGuestsCsv([{ name: 'Ayu', slug: 'ayu', category: 'sheilly', sent: true }]);
   assert.deepEqual(parseGuestsCsv(csv), [{ name: 'Ayu', slug: 'ayu', category: 'sheilly' }]);
+});
+
+
+test('arbitrary categories survive spreadsheet-safe export and import', () => {
+  for (const category of ['Teman Kantor', '=1+1', "'Keluarga"]) {
+    const csv = exportGuestsCsv([{ name: 'Ayu', slug: 'ayu', category, sent: false }]);
+    assert.equal(parseGuestsCsv(csv)[0].category, category);
+  }
 });

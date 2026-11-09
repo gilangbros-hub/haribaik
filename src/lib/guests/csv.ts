@@ -77,8 +77,9 @@ export function parseGuestsCsv(input: string): CsvGuest[] {
     let name = cells[0]!;
     const slug = headers.includes('slug') ? cells[headers.indexOf('slug')]! : '';
     const categoryIndex = headers.indexOf('kategori');
-    const category = categoryIndex < 0 ? undefined : cells[categoryIndex]!.trim().toLocaleLowerCase('id');
-    if (category !== undefined && !['', 'dhanar', 'sheilly', 'ortu', 'keluarga'].includes(category)) throw new Error(`Baris ${index + 2}: kategori harus Dhanar, Sheilly, Ortu, atau Keluarga.`);
+    let category = categoryIndex < 0 ? undefined : cells[categoryIndex]!.trim();
+    if (isExport && category?.startsWith("''")) category = category.slice(1);
+    else if (isExport && category?.startsWith("'") && formulaStart.test(category.slice(1).trimStart())) category = category.slice(1);
     if (isExport && name.startsWith("''")) name = name.slice(1);
     else if (isExport && name.startsWith("'")
       && (formulaStart.test(name.slice(1)) || formulaStart.test(name.slice(1).trimStart()))) name = name.slice(1);

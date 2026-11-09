@@ -34,7 +34,7 @@ const sent = allGuests.filter(({ active, sent }) => active && sent).length;
       </ul>
       <section class="md-card guest-import" aria-labelledby="replace-title">
         <h2 id="replace-title">Ganti daftar dari CSV</h2>
-        <p>Kolom wajib: <code>nama</code>. Slug dibuat otomatis dari nama. Kategori opsional: Dhanar, Sheilly, Ortu, atau Keluarga. Unduhan CSV dapat diimpor kembali; status pengiriman tetap tersimpan. Batas 1 MB dan 1.000 tamu.</p>
+        <p>Kolom wajib: <code>nama</code>. Slug dibuat otomatis dari nama. Kategori opsional, misalnya Dhanar, Sheilly, Ortu, atau Keluarga. Unduhan CSV dapat diimpor kembali; status pengiriman tetap tersimpan. Batas 1 MB dan 1.000 tamu.</p>
         <p>Hapus baris contoh di templat sebelum mengunggah. Saat memperbarui daftar yang sudah ada, pakai "Unduh CSV daftar aktif" agar slug tamu lama tetap sama.</p>
         <div class="md-actions"><a class="md-btn md-btn--outlined" href="/templat-daftar-tamu.csv" download>Unduh templat CSV</a></div>
         <form id="guest-import">
@@ -72,7 +72,7 @@ const sent = allGuests.filter(({ active, sent }) => active && sent).length;
               {guests.map((guest) => {
                 const url = `${canonicalUrl}/${encodeURIComponent(guest.slug)}`;
                 return <tr>
-                  <td data-label="Nama"><strong>{guest.name}</strong></td><td data-label="Slug">{guest.slug}</td><td data-label="Kategori">{guest.category ? guest.category.charAt(0).toUpperCase() + guest.category.slice(1) : "?"}</td><td data-label="Status tamu"><span class={`md-badge ${guest.active ? 'md-badge--yes' : 'md-badge--no'}`}>{guest.active ? 'Aktif' : 'Nonaktif'}</span></td>
+                  <td data-label="Nama"><strong>{guest.name}</strong></td><td data-label="Slug">{guest.slug}</td><td data-label="Kategori">{guest.category || "?"}</td><td data-label="Status tamu"><span class={`md-badge ${guest.active ? 'md-badge--yes' : 'md-badge--no'}`}>{guest.active ? 'Aktif' : 'Nonaktif'}</span></td>
                   <td data-label="Bagikan" class="guest-share">{guest.active && canonicalUrl ? <><button class="md-btn md-btn--text" type="button" data-copy={url} aria-label={`Salin URL untuk ${guest.name}`}>Salin URL</button> {wedding && <button class="md-btn md-btn--text" type="button" data-copy={whatsappMessage(wedding, guest.name, url)} aria-label={`Salin pesan WhatsApp untuk ${guest.name}`}>Salin pesan WA</button>}</> : '—'}</td>
                   <td data-label="Aksi">{guest.active && <button class="md-btn md-btn--text md-btn--danger-text" type="button" data-remove-id={guest.id} data-remove-name={guest.name} aria-label={`Hapus ${guest.name} dari daftar aktif`}>Hapus</button>}</td>
                   <td data-label="Sudah dikirim"><input type="checkbox" data-sent-id={guest.id} checked={guest.sent} disabled={!guest.active} aria-label={`Tandai undangan untuk ${guest.name} sudah dikirim`} /></td>

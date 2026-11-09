@@ -11,7 +11,7 @@ test('WhatsApp message follows the invitation format and preserves event details
   ] };
   const message = whatsappMessage(content, 'Ibu Sari', 'https://example.test/sari');
   assert.ok(message.includes('Kepada Yth.\n*Ibu Sari*'));
-  assert.ok(message.includes('*Andi*\n*&*\n*Bunga*'));
+  assert.ok(message.includes('*Bunga*\n*&*\n*Andi*'));
   assert.match(message, /1 Desember 2026[\s\S]*Akad: 09\.00–10\.00 WIB[\s\S]*Resepsi: 11\.00 WIB[\s\S]*📍 Gedung A\nJakarta/);
   assert.match(message, /2 Desember 2026[\s\S]*Syukuran: 11\.00 WIB[\s\S]*📍 Gedung B\nBandung/);
   assert.equal((message.match(/1 Desember 2026/g) || []).length, 1);

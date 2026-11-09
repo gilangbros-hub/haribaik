@@ -16,7 +16,7 @@ export function whatsappMessage(content: WeddingContent, guest: string, url: str
     "Assalamu'alaikum Warahmatullahi Wabarakatuh",
     `Kepada Yth.\n*${guest}*`,
     'Dengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara pernikahan kami.',
-    `*${content.groomName}*\n*&*\n*${content.brideName}*`,
+    `*${content.brideName}*\n*&*\n*${content.groomName}*`,
     events && `Insya Allah akan melaksanakan ${content.events.map((event) => event.name || 'acara pernikahan').join(' dan ')} pada:\n${events}`,
     `Klik link pada undangan berikut:\n${url}`,
     'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu. Semoga Allah SWT menjadikan pernikahan ini sebagai ibadah, membawa keberkahan, dan menjadi langkah awal kami membangun keluarga yang Sakinah, Mawaddah, Warahmah.',

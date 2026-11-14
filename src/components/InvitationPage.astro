@@ -28,8 +28,8 @@ const profiles = [
 ];
 // Only accounts with a number are shown; old content has no bank fields.
 const accounts = [
-  { role: 'Mempelai wanita', bank: invitation.brideBank, number: invitation.brideAccount, holder: invitation.brideName },
-  { role: 'Mempelai pria', bank: invitation.groomBank, number: invitation.groomAccount, holder: invitation.groomName },
+  { role: 'Mempelai wanita', bank: invitation.brideBank, number: invitation.brideAccount, holder: invitation.brideName.replace(/,.*$/, '') },
+  { role: 'Mempelai pria', bank: invitation.groomBank, number: invitation.groomAccount, holder: invitation.groomName.replace(/,.*$/, '') },
 ].filter((account) => account.number);
 // Blank lines split paragraphs; a block starting with "#" is a subheading. Old content has no storyText.
 const storyBlocks = (invitation.storyText ?? '').split(/\r?\n\s*\r?\n/).map((block) => block.trim()).filter(Boolean);
@@ -145,7 +145,6 @@ const numbers = sectionNumbers([
     {invitation.events.map((event, index) => (
       <section class="event section" aria-labelledby={`event-title-${index}`}>
         <span class="section-number" aria-hidden="true">{numbers[`event-${index}`]} / WAKTU & TEMPAT</span>
-        <p class="eyebrow">{copy.events.eyebrow}</p>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
         <article class="event-card">
           <span class="event-symbol"><Icon name="calendar" /></span>

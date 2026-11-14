@@ -144,7 +144,7 @@ const numbers = sectionNumbers([
     <div id="acara" class="events-wrap">
     {invitation.events.map((event, index) => (
       <section class="event section" aria-labelledby={`event-title-${index}`}>
-        <span class="section-number" aria-hidden="true">{numbers[`event-${index}`]} / WAKTU & TEMPAT</span>
+        <span class="section-number" aria-hidden="true">{numbers[`event-${index}`]}</span>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
         <article class="event-card">
           <span class="event-symbol"><Icon name="calendar" /></span>

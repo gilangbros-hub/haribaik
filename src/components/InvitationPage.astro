@@ -81,7 +81,7 @@ const numbers = sectionNumbers([
     <button class="open-button" type="button" data-open-invitation aria-controls="invitation-body" aria-expanded="false">
       Buka Undangan <Icon name="arrow" />
     </button>
-    {media?.music && <><button class="music-button" type="button" data-music-toggle aria-pressed="false">Putar musik</button><audio data-invitation-audio src={media.music} preload="none" aria-label="Musik undangan"></audio><p data-audio-status role="status" aria-live="polite"></p></>}
+    {media?.music && <><button class="music-button" type="button" data-music-toggle aria-pressed="false" aria-label="Putar musik"><Icon name="play" /><Icon name="pause" /><span>Musik</span></button><audio data-invitation-audio src={media.music} preload="none" aria-label="Musik undangan"></audio><p data-audio-status role="status" aria-live="polite"></p></>}
     {preview && <p class="sample-note">Pratinjau — belum dipublikasikan</p>}
   </section>
 
@@ -345,7 +345,7 @@ const numbers = sectionNumbers([
   const updateMusic = () => {
     if (!audio || !musicButton) return;
     const playing = !audio.paused;
-    musicButton.textContent = playing ? 'Jeda musik' : 'Putar musik';
+    musicButton.setAttribute('aria-label', playing ? 'Jeda musik' : 'Putar musik');
     musicButton.setAttribute('aria-pressed', String(playing));
   };
   audio?.addEventListener('play', updateMusic);

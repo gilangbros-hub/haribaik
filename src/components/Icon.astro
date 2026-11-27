@@ -1,6 +1,6 @@
 ---
 interface Props {
-  name: 'flower' | 'arrow' | 'calendar' | 'pin' | 'heart' | 'home' | 'gift' | 'message';
+  name: 'flower' | 'arrow' | 'calendar' | 'pin' | 'heart' | 'home' | 'gift' | 'message' | 'play' | 'pause';
 }
 const { name } = Astro.props;
 const paths = {
@@ -12,6 +12,8 @@ const paths = {
   home: 'm3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8',
   gift: 'M3 8h18v4H3ZM5 12v9h14v-9M12 8v13m0-13C3 8 5 0 10 4l2 4Zm0 0c9 0 7-8 2-4l-2 4Z',
   message: 'M4 4h16v13H9l-5 4V4Zm4 5h8m-8 4h5',
+  play: 'M8 5v14l11-7Z',
+  pause: 'M9 5v14m6-14v14',
 };
 ---
 <svg class="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d={paths[name]} /></svg>

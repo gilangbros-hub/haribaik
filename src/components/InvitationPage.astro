@@ -146,6 +146,8 @@ const numbers = sectionNumbers([
       <section class="event section" aria-labelledby={`event-title-${index}`}>
         <span class="section-number" aria-hidden="true">{numbers[`event-${index}`]}</span>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
+        {/* shortcut: matched by event name, add an admin field if more events need a note */}
+        {/akad/i.test(event.name) && <p class="event-note">Dihadiri oleh keluarga</p>}
         <article class="event-card">
           <span class="event-symbol"><Icon name="calendar" /></span>
           <p class="event-date">{event.startsAt && formatWeddingDate(event.startsAt, invitation.timeZone)}</p>
@@ -159,11 +161,14 @@ const numbers = sectionNumbers([
           <h3>{event.venue}</h3>
           <p>{event.address}</p>
           {(event.venue || event.address) && (
-            <div class="event-map">
-              {/* Keyless embed searches venue + address; the admin's map link may be a short link that cannot embed. */}
-              <iframe src={`https://maps.google.com/maps?q=${encodeURIComponent([event.venue, event.address].filter(Boolean).join(', '))}&z=16&output=embed`} title={`Peta lokasi ${event.venue || event.name}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
-              {event.mapUrl && <a class="map-open" href={event.mapUrl} target="_blank" rel="noreferrer"><Icon name="pin" /> Buka peta</a>}
-            </div>
+            <details class="map-toggle">
+              <summary class="text-link"><Icon name="pin" /> Lihat peta</summary>
+              <div class="event-map">
+                {/* Keyless embed searches venue + address; the admin's map link may be a short link that cannot embed. */}
+                <iframe src={`https://maps.google.com/maps?q=${encodeURIComponent([event.venue, event.address].filter(Boolean).join(', '))}&z=16&output=embed`} title={`Peta lokasi ${event.venue || event.name}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                {event.mapUrl && <a class="map-open" href={event.mapUrl} target="_blank" rel="noreferrer"><Icon name="pin" /> Buka peta</a>}
+              </div>
+            </details>
           )}
           <div class="event-actions">
             {event.mapUrl && <a class="text-link" href={event.mapUrl} target="_blank" rel="noreferrer"><Icon name="pin" /> Petunjuk arah</a>}

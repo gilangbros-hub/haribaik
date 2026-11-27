@@ -135,7 +135,7 @@ const showGallery = copy.gallery.enabled && media?.gallery.some(Boolean);
       <section class="event section" aria-labelledby={`event-title-${index}`}>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
         {/* shortcut: matched by event name, add an admin field if more events need a note */}
-        {/akad/i.test(event.name) && <p class="event-note">Dihadiri oleh keluarga</p>}
+        {/akad/i.test(event.name) && <p class="event-note">(Dihadiri oleh keluarga)</p>}
         <article class="event-card">
           <span class="event-symbol"><Icon name="calendar" /></span>
           <p class="event-date">{event.startsAt && formatWeddingDate(event.startsAt, invitation.timeZone)}</p>

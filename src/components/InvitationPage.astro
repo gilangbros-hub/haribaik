@@ -6,7 +6,6 @@ import { formatWeddingDate, lineage, sectionCopy, sectionKeys, type SectionCopy,
 import type { WeddingMediaUrls } from '../lib/content/media';
 import type { GuestWish } from '../lib/guests/wishes';
 import '../styles/invitation.css';
-import { sectionNumbers } from '../lib/section-numbers';
 
 interface Props {
   invitation: WeddingContent;
@@ -38,13 +37,6 @@ const salam = /assalamu/i.test(invitation.greeting) ? 'Wassalamu’alaikum warah
 const families = [invitation.brideParents, invitation.groomParents].filter(Boolean);
 const copy = Object.fromEntries(sectionKeys.map((key) => [key, sectionCopy(invitation, key)])) as Record<SectionKey, SectionCopy>;
 const showGallery = copy.gallery.enabled && media?.gallery.some(Boolean);
-const numbers = sectionNumbers([
-  copy.welcome.enabled && 'welcome', copy.profiles.enabled && 'profiles',
-  copy.story.enabled && (storyBlocks.length > 0 || !!media?.storyImage) && 'story',
-  ...(copy.events.enabled ? invitation.events.map((_, index) => `event-${index}`) : []),
-  showGallery && 'gallery', copy.gift.enabled && accounts.length > 0 && 'gift',
-  copy.wishes.enabled && 'wishes', copy.guide.enabled && 'guide', copy.closing.enabled && 'closing',
-]);
 ---
 
 <aside class="desktop-story" aria-label="Pernikahan">
@@ -89,7 +81,6 @@ const numbers = sectionNumbers([
   <div id="invitation-body" class="invitation-body" tabindex="-1" hidden>
     {copy.welcome.enabled && (
     <section class="welcome section" aria-labelledby="welcome-title">
-      <span class="section-number" aria-hidden="true">{numbers.welcome} / PAMBUKA</span>
       <p class="eyebrow">{invitation.greeting}</p>
       <h2 id="welcome-title"><RichTitle text={copy.welcome.title} /></h2>
       <p>{copy.welcome.text}</p>
@@ -100,7 +91,6 @@ const numbers = sectionNumbers([
 
     {copy.profiles.enabled && (
     <section id="mempelai" class="profiles section" aria-labelledby="profiles-title">
-      <span class="section-number" aria-hidden="true">{numbers.profiles} / MEMPELAI</span>
       <h2 id="profiles-title"><RichTitle text={copy.profiles.title} /></h2>
       <div class="profile-grid">
           {profiles.map((profile, index) => {
@@ -122,7 +112,6 @@ const numbers = sectionNumbers([
 
     {copy.story.enabled && (storyBlocks.length > 0 || media?.storyImage) && (
       <section id="cerita" class="story section" aria-labelledby="story-title" style={media?.storyImage ? `--story-bg: url("${media.storyImage}")` : undefined}>
-        <span class="section-number" aria-hidden="true">{numbers.story} / CERITA</span>
         <p class="eyebrow">{copy.story.eyebrow}</p>
         <h2 id="story-title"><RichTitle text={copy.story.title} /></h2>
         <div class="story-body">
@@ -144,7 +133,6 @@ const numbers = sectionNumbers([
     <div id="acara" class="events-wrap">
     {invitation.events.map((event, index) => (
       <section class="event section" aria-labelledby={`event-title-${index}`}>
-        <span class="section-number" aria-hidden="true">{numbers[`event-${index}`]}</span>
         <h2 id={`event-title-${index}`}>{event.name || 'Acara'}</h2>
         {/* shortcut: matched by event name, add an admin field if more events need a note */}
         {/akad/i.test(event.name) && <p class="event-note">Dihadiri oleh keluarga</p>}
@@ -182,7 +170,6 @@ const numbers = sectionNumbers([
 
     {showGallery && media && (
       <section id="galeri" class="gallery section" aria-labelledby="gallery-title">
-        <span class="section-number" aria-hidden="true">{numbers.gallery} / GALERI</span>
         <p class="eyebrow">{copy.gallery.eyebrow}</p>
         <h2 id="gallery-title"><RichTitle text={copy.gallery.title} /></h2>
         <div class="gallery-grid">
@@ -193,7 +180,6 @@ const numbers = sectionNumbers([
 
     {copy.gift.enabled && accounts.length > 0 && (
       <section id="hadiah" class="gift section" aria-labelledby="gift-title">
-        <span class="section-number" aria-hidden="true">{numbers.gift} / HADIAH</span>
         <span class="section-icon"><Icon name="gift" /></span>
         <p class="eyebrow">{copy.gift.eyebrow}</p>
         <h2 id="gift-title"><RichTitle text={copy.gift.title} /></h2>
@@ -214,7 +200,6 @@ const numbers = sectionNumbers([
 
     {copy.wishes.enabled && (<>
     <section id="ucapan" class="wishes section" aria-labelledby="wishes-title">
-      <span class="section-number" aria-hidden="true">{numbers.wishes} / UCAPAN</span>
       <span class="section-icon"><Icon name="message" /></span>
       <p class="eyebrow">{copy.wishes.eyebrow}</p>
       <h2 id="wishes-title"><RichTitle text={copy.wishes.title} /></h2>
@@ -249,7 +234,6 @@ const numbers = sectionNumbers([
 
     {copy.guide.enabled && (
     <section id="panduan" class="guest-guide section" aria-labelledby="guide-title">
-      <span class="section-number" aria-hidden="true">{numbers.guide} / PANDUAN</span>
       <p class="eyebrow">{copy.guide.eyebrow}</p>
       <h2 id="guide-title"><RichTitle text={copy.guide.title} /></h2>
       <p class="section-intro">{copy.guide.text}</p>
@@ -267,7 +251,6 @@ const numbers = sectionNumbers([
 
     {copy.closing.enabled && (
     <footer class="closing section" aria-labelledby="closing-title">
-      <span class="section-number" aria-hidden="true">{numbers.closing} / PENUTUP</span>
       <div class="closing-card">
         <span class="monogram" aria-hidden="true">{(invitation.coverBrideName || invitation.brideName).charAt(0)} <i>&</i> {(invitation.coverGroomName || invitation.groomName).charAt(0)}</span>
         <p class="eyebrow">{copy.closing.eyebrow}</p>
